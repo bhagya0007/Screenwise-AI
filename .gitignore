@@ -1,0 +1,37 @@
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/env/
+venv/
+ENV/
+env/
+*.sqlite3
+*.db
+backend/*.db
+
+# Node & Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.tmp/
+.eslintcache
+*.tsbuildinfo
+
+# Environment variables
+.env
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# IDEs & System files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
