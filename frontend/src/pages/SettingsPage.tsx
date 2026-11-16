@@ -25,9 +25,9 @@ export const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'guidelines' | 'practice' | 'alerts' | 'system'>('guidelines');
 
   // Practice settings state
-  const [providerName, setProviderName] = useState('Dr. Jennifer Vance, MD');
-  const [practiceName, setPracticeName] = useState('Northwest Preventive Care Health Center');
-  const [npiNumber, setNpiNumber] = useState('1847294821');
+  const [providerName, setProviderName] = useState('Dr. Fatima Al Suwaidi, MD');
+  const [practiceName, setPracticeName] = useState('Al Bateen Healthcare Center (SEHA Abu Dhabi)');
+  const [npiNumber, setNpiNumber] = useState('DOH-LIC-049281');
   const [reminderWindowDays, setReminderWindowDays] = useState('90');
   const [savedNotice, setSavedNotice] = useState(false);
 
@@ -106,20 +106,25 @@ export const SettingsPage: React.FC = () => {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Active Evidence-Based Screening Protocols</CardTitle>
-              <CardDescription>
-                ScreenWise AI evaluates patient parameters against authoritative clinical society guidelines
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Active Evidence-Based Screening Protocols</CardTitle>
+                  <CardDescription>
+                    ScreenWise AI evaluates patient parameters against official Abu Dhabi Public Health Centre (ADPHC) & DoH standards
+                  </CardDescription>
+                </div>
+                <Badge variant="teal">ADPHC / DoH 2024 Edition</Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4 text-xs">
               <div className="p-4 rounded-xl bg-[#F6F8FB] border border-slate-200 flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-[#173A56] text-sm">Type 2 Diabetes Screening</h4>
-                    <Badge variant="teal">ADA 2024 / USPSTF 2021</Badge>
+                    <h4 className="font-bold text-[#173A56] text-sm">Type 2 Diabetes & Prediabetes Screening</h4>
+                    <Badge variant="teal">ADPHC IFHAS Standard</Badge>
                   </div>
                   <p className="text-slate-600 mt-1 leading-relaxed">
-                    Evaluates nonpregnant adults aged 35 to 70 years who are overweight or obese (BMI ≥ 25, or ≥ 23 for Asian populations). Screening interval: Every 3 years if normal; annually if HbA1c 5.7%–6.4% or fasting glucose 100–125 mg/dL.
+                    Universal baseline screening for all adults starting at <strong>age 30</strong> (or age 18+ with BMI ≥ 25 or cardiometabolic risk indicators). Screening interval: Every 3 years if normal; <strong>annually</strong> if HbA1c 5.7%–6.4% or fasting glucose 100–125 mg/dL (prediabetes surveillance).
                   </p>
                 </div>
               </div>
@@ -128,10 +133,10 @@ export const SettingsPage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-[#173A56] text-sm">Cardiovascular Health (Hypertension & Dyslipidemia)</h4>
-                    <Badge variant="navy">ACC/AHA / USPSTF</Badge>
+                    <Badge variant="navy">ADPHC Weqaya Protocol</Badge>
                   </div>
                   <p className="text-slate-600 mt-1 leading-relaxed">
-                    Adults 18+: annual BP checks if age ≥40 or high-normal BP (120–129/&lt;80 mmHg); every 3–5 years for 18–39 with normal BP. Universal 5-year lipid panels for ages 40–75 for 10-year ASCVD risk calculation.
+                    Adults 18+: annual resting BP checks if age ≥40 or high-normal BP (120–129/&lt;80 mmHg); every 3 years for 18–39 with normal BP. Routine 5-year lipid panels starting at age 20. <em>Strict safety rule: Formal 10-year risk scoring is explicitly deferred if required inputs are incomplete.</em>
                   </p>
                 </div>
               </div>
@@ -140,10 +145,10 @@ export const SettingsPage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-[#173A56] text-sm">Breast Cancer Screening</h4>
-                    <Badge variant="teal">USPSTF 2024 Updated</Badge>
+                    <Badge variant="teal">ADPHC Breast Standard</Badge>
                   </div>
                   <p className="text-slate-600 mt-1 leading-relaxed">
-                    Biennial (every 2 years) digital mammography for women aged 40 to 74 at average risk. Early initiation (from age 30) for positive 1st-degree relative family history.
+                    Biennial (every 2 years) digital mammography for women aged 40 to 69 at average risk. Early initiation (from <strong>age 30</strong>) for positive first-degree relative family history or genetic predisposition.
                   </p>
                 </div>
               </div>
@@ -152,10 +157,10 @@ export const SettingsPage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-[#173A56] text-sm">Cervical Cancer Screening</h4>
-                    <Badge variant="navy">USPSTF 2018 / ASCCP</Badge>
+                    <Badge variant="navy">ADPHC Cervical Standard</Badge>
                   </div>
                   <p className="text-slate-600 mt-1 leading-relaxed">
-                    Women with a cervix aged 21 to 29: cytology every 3 years. Aged 30 to 65: cytology every 3 years, hrHPV every 5 years, or hrHPV co-testing every 5 years. Discontinue after 65 with negative history.
+                    Women with an intact cervix aged 25 to 65: cytology every 3 years for ages 25–29; hrHPV co-testing every 5 years for ages 30–65. Discontinue after 65 with negative history. Not indicated post-hysterectomy with cervix removed.
                   </p>
                 </div>
               </div>
@@ -164,10 +169,10 @@ export const SettingsPage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-[#173A56] text-sm">Colorectal Cancer Screening</h4>
-                    <Badge variant="teal">USPSTF 2021 Updated</Badge>
+                    <Badge variant="teal">ADPHC Colorectal Standard (Age 40+)</Badge>
                   </div>
                   <p className="text-slate-600 mt-1 leading-relaxed">
-                    All adults aged 45 to 75. Options: Annual FIT stool test, 3-year Stool DNA-FIT (Cologuard), or 10-year Colonoscopy (5-year interval if family history of colorectal cancer).
+                    All adults aged <strong>40 to 75</strong> (earlier initiation than Western 45 due to regional epidemiology). Modalities: Annual at-home FIT stool test, or 10-year Screening Colonoscopy (5-year interval if family history of colorectal cancer).
                   </p>
                 </div>
               </div>
@@ -201,7 +206,7 @@ export const SettingsPage: React.FC = () => {
               />
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="National Provider Identifier (NPI)"
+                  label="Department of Health (DoH) License"
                   value={npiNumber}
                   onChange={(e) => setNpiNumber(e.target.value)}
                   required

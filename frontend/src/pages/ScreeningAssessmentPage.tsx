@@ -36,6 +36,133 @@ export const ScreeningAssessmentPage: React.FC = () => {
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [selectedAssessmentForFollowUp, setSelectedAssessmentForFollowUp] = useState<ScreeningAssessment | null>(null);
 
+  interface PresetScenario {
+    id: string;
+    name: string;
+    badge: string;
+    badgeColor: string;
+    summary: string;
+    data: PatientCreateInput;
+  }
+
+  const PRESET_SCENARIOS: PresetScenario[] = [
+    {
+      id: 'tariq',
+      name: 'Scenario 1: Tariq (42y Male)',
+      badge: 'ADPHC Colorectal 40+ & Prediabetes',
+      badgeColor: 'border-teal-200 bg-teal-50 text-teal-800',
+      summary: 'ADPHC initiates colorectal screening at age 40 (earlier than US 45). Also overdue for annual prediabetes recall.',
+      data: {
+        first_name: 'Tariq',
+        last_name: 'Al Hashimi',
+        date_of_birth: '1984-03-10',
+        sex: 'male',
+        bmi: 28.5,
+        systolic_bp: 128,
+        diastolic_bp: 82,
+        is_smoker: false,
+        has_diabetes_history: false,
+        has_hypertension: false,
+        fasting_glucose: 108.0,
+        hba1c: 5.9,
+        total_cholesterol: 195.0,
+        ldl_cholesterol: 120.0,
+        family_history_diabetes: true,
+        family_history_cad: false,
+        family_history_breast_cancer: false,
+        family_history_colorectal_cancer: false,
+        cervix_present: false,
+        last_diabetes_screen_date: '2022-02-15',
+        last_lipid_panel_date: '2023-01-20',
+        last_bp_check_date: '2024-02-10',
+        last_colorectal_screen_date: undefined,
+        colorectal_screen_type: 'colonoscopy',
+      }
+    },
+    {
+      id: 'mariam',
+      name: 'Scenario 2: Mariam (34y Female)',
+      badge: 'High Hereditary Breast Cancer Risk',
+      badgeColor: 'border-rose-200 bg-rose-50 text-rose-800',
+      summary: 'First-degree relative diagnosed with breast cancer: triggers accelerated annual mammography starting at age 30.',
+      data: {
+        first_name: 'Mariam',
+        last_name: 'Al Dhaheri',
+        date_of_birth: '1992-06-15',
+        sex: 'female',
+        bmi: 23.4,
+        systolic_bp: 116,
+        diastolic_bp: 74,
+        is_smoker: false,
+        has_diabetes_history: false,
+        has_hypertension: false,
+        fasting_glucose: 88.0,
+        hba1c: 5.1,
+        total_cholesterol: 175.0,
+        ldl_cholesterol: 95.0,
+        family_history_diabetes: false,
+        family_history_cad: false,
+        family_history_breast_cancer: true,
+        family_history_colorectal_cancer: false,
+        cervix_present: true,
+        last_diabetes_screen_date: '2023-05-10',
+        last_lipid_panel_date: '2023-05-10',
+        last_bp_check_date: '2024-01-15',
+        last_mammogram_date: undefined,
+        last_cervical_screen_date: '2023-05-10',
+        last_colorectal_screen_date: undefined,
+        colorectal_screen_type: 'colonoscopy',
+      }
+    },
+    {
+      id: 'sultan',
+      name: 'Scenario 3: Sultan (58y Smoker)',
+      badge: 'Stage 2 HTN & Risk Score Deferral',
+      badgeColor: 'border-amber-200 bg-amber-50 text-amber-900',
+      summary: 'BP 148/94 mmHg (Stage 2 HTN) and missing lipid labs: formal 10-year risk score explicitly deferred for safety.',
+      data: {
+        first_name: 'Sultan',
+        last_name: 'Al Mazrouei',
+        date_of_birth: '1968-11-20',
+        sex: 'male',
+        bmi: 30.2,
+        systolic_bp: 148,
+        diastolic_bp: 94,
+        is_smoker: true,
+        has_diabetes_history: false,
+        has_hypertension: true,
+        fasting_glucose: undefined,
+        hba1c: undefined,
+        total_cholesterol: undefined,
+        ldl_cholesterol: undefined,
+        family_history_diabetes: true,
+        family_history_cad: true,
+        family_history_breast_cancer: false,
+        family_history_colorectal_cancer: false,
+        cervix_present: false,
+        last_diabetes_screen_date: undefined,
+        last_lipid_panel_date: undefined,
+        last_bp_check_date: '2024-02-15',
+        last_colorectal_screen_date: '2024-01-10',
+        colorectal_screen_type: 'colonoscopy',
+      }
+    }
+  ];
+
+  const handleApplyPreset = async (preset: PresetScenario) => {
+    setSelectedPatientId('custom');
+    setFormData(preset.data);
+    setEvaluating(true);
+    try {
+      const simulated = await screeningService.simulate(preset.data);
+      setResults(simulated);
+    } catch (err) {
+      console.error('Failed evaluating preset:', err);
+    } finally {
+      setEvaluating(false);
+    }
+  };
+
   // Form state for custom or selected patient
   const [formData, setFormData] = useState<PatientCreateInput>({
     first_name: 'Arthur',
@@ -156,7 +283,7 @@ export const ScreeningAssessmentPage: React.FC = () => {
             <span>Screening Assessment Engine</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Evaluate adult clinical parameters against USPSTF, ADA, and ACC/AHA guidelines in real-time.
+            Evaluate adult clinical parameters against ADPHC (IFHAS & Weqaya) and DoH Abu Dhabi clinical screening standards in real-time.
           </p>
         </div>
 
@@ -178,6 +305,50 @@ export const ScreeningAssessmentPage: React.FC = () => {
       </div>
 
       <ClinicalDisclaimer variant="compact" />
+
+      {/* 1-Click Interactive Clinical Presets for Hackathon Judges */}
+      <Card className="p-4 bg-white border border-slate-200/90 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#378C83]" />
+            <h3 className="text-xs font-bold text-[#173A56] uppercase tracking-wider">
+              1-Click Interactive Clinical Presets (Evaluator Fast-Track)
+            </h3>
+          </div>
+          <span className="text-[11px] text-slate-400">
+            Click any scenario to immediately simulate and view guideline decision logic
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {PRESET_SCENARIOS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => handleApplyPreset(preset)}
+              className="p-3 rounded-xl border border-slate-200 hover:border-[#173A56] bg-slate-50/60 hover:bg-slate-100/80 text-left transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  <span className="font-bold text-xs text-[#173A56] group-hover:text-[#378C83] transition-colors">
+                    {preset.name}
+                  </span>
+                </div>
+                <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded border mb-1.5 ${preset.badgeColor}`}>
+                  {preset.badge}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  {preset.summary}
+                </p>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-[#378C83] font-semibold">
+                <span>Simulate Scenario →</span>
+                <Play className="w-3 h-3 fill-current" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
 
       {/* Two Column Layout: Assessment Form & Results */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -428,8 +599,8 @@ export const ScreeningAssessmentPage: React.FC = () => {
               </h2>
               <p className="text-xs text-slate-500">
                 {results.length > 0
-                  ? `Evaluated against 5 USPSTF/ADA clinical pathways for ${formData.first_name} ${formData.last_name}`
-                  : 'Click "Run Clinical Guidelines Assessment" to generate results'}
+                  ? `Evaluated against ADPHC (IFHAS & Weqaya) clinical pathways for ${formData.first_name} ${formData.last_name}`
+                  : 'Click "Run Clinical Guidelines Assessment" or select a scenario above'}
               </p>
             </div>
 

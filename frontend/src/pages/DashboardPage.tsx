@@ -43,6 +43,7 @@ export const DashboardPage: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [analytics, setAnalytics] = useState<PopulationAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showGuide, setShowGuide] = useState(true);
 
   const loadDashboardData = async () => {
     try {
@@ -125,6 +126,86 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Interactive Hackathon Evaluator Quick-Start Guide */}
+      {showGuide && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-[#173A56] to-[#1e4d73] text-white shadow-sm space-y-3 relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 relative z-10">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-[#378C83] text-white font-bold text-[10px] tracking-wide uppercase">
+                Evaluator Guide
+              </span>
+              <h2 className="text-sm font-bold text-white tracking-tight">
+                Recommended 3-Minute Hackathon Demonstration Workflow
+              </h2>
+            </div>
+            <button
+              onClick={() => setShowGuide(false)}
+              className="text-xs text-slate-300 hover:text-white self-start sm:self-auto cursor-pointer"
+            >
+              ✕ Dismiss
+            </button>
+          </div>
+
+          <p className="text-xs text-slate-200 leading-relaxed max-w-3xl relative z-10">
+            Welcome to <strong>ScreenWise AI</strong>, aligned with <strong>Abu Dhabi ADPHC & DoH (IFHAS & Weqaya) Standards</strong>.
+            Follow these 3 clinical steps to evaluate the live platform:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 text-xs">
+            {/* Step 1 */}
+            <Link
+              to="/patients"
+              className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-1.5 font-bold text-teal-300 mb-1">
+                  <span>1. Clinical Patients</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+                <p className="text-[11px] text-slate-200">
+                  Select <strong>Amina Al Mansoori</strong> (48y) or <strong>Tariq</strong> (42y). Notice ADPHC colorectal screening starts at age 40 (earlier than US 45).
+                </p>
+              </div>
+              <span className="text-[10px] text-teal-300 font-semibold mt-2">Open Directory →</span>
+            </Link>
+
+            {/* Step 2 */}
+            <Link
+              to="/assessment"
+              className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-1.5 font-bold text-teal-300 mb-1">
+                  <span>2. Guidelines Engine</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+                <p className="text-[11px] text-slate-200">
+                  Test the 1-click presets: early colorectal gap, hereditary breast risk, and risk score deferral for missing lipids.
+                </p>
+              </div>
+              <span className="text-[10px] text-teal-300 font-semibold mt-2">Test Simulator →</span>
+            </Link>
+
+            {/* Step 3 */}
+            <Link
+              to="/analytics"
+              className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-1.5 font-bold text-teal-300 mb-1">
+                  <span>3. Privacy Analytics</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+                <p className="text-[11px] text-slate-200">
+                  Inspect Recharts graphs and small-cell privacy suppression (cohorts $n &lt; 5$ masked with <code>&lt; 5</code>).
+                </p>
+              </div>
+              <span className="text-[10px] text-teal-300 font-semibold mt-2">View Analytics →</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* 4 Core Top Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Patients */}
