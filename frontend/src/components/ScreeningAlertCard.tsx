@@ -31,32 +31,72 @@ export const ScreeningAlertCard: React.FC<ScreeningAlertCardProps> = ({
   const categoryTitles: Record<ScreeningCategory, { title: string; subtitle: string }> = {
     diabetes: {
       title: 'Type 2 Diabetes & Prediabetes',
-      subtitle: 'USPSTF 2021 / ADA 2024 Criteria (FPG / HbA1c)',
+      subtitle: 'ADPHC IFHAS 2024 Standard (FPG / HbA1c)',
     },
     cardiovascular: {
       title: 'Cardiovascular Health',
-      subtitle: 'ACC/AHA & USPSTF (Blood Pressure & Lipid Profile)',
+      subtitle: 'ADPHC Weqaya 2024 Standard (Blood Pressure & Lipid Profile)',
     },
     cancer_breast: {
       title: 'Breast Cancer Screening',
-      subtitle: 'USPSTF 2024 (Biennial Digital Mammography)',
+      subtitle: 'ADPHC 2024 Standard (Biennial Mammography, Ages 40–75)',
     },
     cancer_cervical: {
       title: 'Cervical Cancer Screening',
-      subtitle: 'USPSTF 2018 / ASCCP (Cytology & hrHPV)',
+      subtitle: 'ADPHC 2024 Standard (hrHPV & Cytology, Ages 25–65)',
     },
     cancer_colorectal: {
       title: 'Colorectal Cancer Screening',
-      subtitle: 'USPSTF 2021 (FIT / sDNA-FIT / Colonoscopy)',
+      subtitle: 'ADPHC 2024 Standard (Annual FIT / Colonoscopy, Age 40+)',
     },
   };
 
   const meta = categoryTitles[assessment.category] || {
     title: assessment.category.replace('_', ' ').toUpperCase(),
-    subtitle: assessment.guideline_source,
+    subtitle: assessment.applicable_guideline_reference || assessment.guideline_source,
   };
 
   const getStatusBadge = () => {
+    if (assessment.flag_status) {
+      switch (assessment.flag_status) {
+        case 'Requires professional review':
+          return (
+            <Badge variant="danger">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Requires Professional Review</span>
+            </Badge>
+          );
+        case 'Potentially overdue':
+          return (
+            <Badge variant="warning">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Potentially Overdue</span>
+            </Badge>
+          );
+        case 'Potentially due':
+          return (
+            <Badge variant="teal">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Potentially Due</span>
+            </Badge>
+          );
+        case 'No current gap identified':
+          return (
+            <Badge variant="success">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>No Gap Identified</span>
+            </Badge>
+          );
+        case 'Insufficient information':
+          return (
+            <Badge variant="secondary">
+              <MinusCircle className="w-3.5 h-3.5" />
+              <span>Insufficient Info</span>
+            </Badge>
+          );
+      }
+    }
+
     switch (assessment.status) {
       case 'up_to_date':
         return (
@@ -163,25 +203,50 @@ export const ScreeningAlertCard: React.FC<ScreeningAlertCardProps> = ({
           ) : (
             <p className="text-slate-400 italic">No specific risk triggers flagged.</p>
           )}
+
+          {/* Missing data tags if any */}
+          {assessment.missing_information && assessment.missing_information.length > 0 && (
+            <div className="mt-3 pt-2.5 border-t border-slate-200/60">
+              <span className="text-[10px] font-semibold text-amber-800 uppercase tracking-wider block mb-1">
+                Data Gaps Noted:
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {assessment.missing_information.map((m, i) => (
+                  <span key={i} className="inline-block bg-amber-100/80 text-amber-900 text-[10px] px-1.5 py-0.5 rounded font-medium">
+                    {m}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Suggested Next Steps */}
-        <div className="bg-slate-50/80 p-3.5 rounded-lg border border-slate-100">
-          <p className="font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
-            <span>Recommended Preventive Next Steps</span>
-          </p>
-          {assessment.suggested_next_steps.length > 0 ? (
-            <ul className="space-y-1.5 text-slate-600">
-              {assessment.suggested_next_steps.map((step, idx) => (
-                <li key={idx} className="flex items-start gap-1.5">
-                  <span className="text-blue-600 font-semibold">{idx + 1}.</span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-slate-400 italic">Continue routine surveillance.</p>
+        <div className="bg-slate-50/80 p-3.5 rounded-lg border border-slate-100 flex flex-col justify-between">
+          <div>
+            <p className="font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
+              <span>Recommended Preventive Next Steps</span>
+            </p>
+            {assessment.suggested_next_steps.length > 0 ? (
+              <ul className="space-y-1.5 text-slate-600">
+                {assessment.suggested_next_steps.map((step, idx) => (
+                  <li key={idx} className="flex items-start gap-1.5">
+                    <span className="text-blue-600 font-semibold">{idx + 1}.</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-400 italic">Continue routine surveillance.</p>
+            )}
+          </div>
+
+          {/* Uncertainty or scoring note if present */}
+          {assessment.uncertainty_note && (
+            <div className="mt-3 pt-2 border-t border-slate-200/60 text-[11px] text-slate-500 italic">
+              <strong>Clinical Note:</strong> {assessment.uncertainty_note}
+            </div>
           )}
         </div>
       </div>

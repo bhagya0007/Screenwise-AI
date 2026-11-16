@@ -24,6 +24,7 @@ export type FollowUpActionType = 'lab_test' | 'imaging' | 'consultation' | 'life
 
 export interface Patient {
   id: number;
+  patient_reference?: string;
   first_name: string;
   last_name: string;
   date_of_birth: string;
@@ -104,8 +105,20 @@ export interface ScreeningAssessment {
   id?: number;
   patient_id: number;
   patient_name?: string;
+  patient_reference?: string;
   category: ScreeningCategory;
+  screening_category?: string;
   status: ScreeningStatus;
+  flag_status?: string;
+  reason_for_flag?: string;
+  relevant_patient_factors?: Record<string, any>;
+  missing_information?: string[];
+  applicable_guideline_reference?: string;
+  guideline_version?: string;
+  suggested_next_step?: string;
+  professional_review_requirement?: string;
+  uncertainty_note?: string;
+  programme_eligibility?: Record<string, any>;
   risk_level: RiskLevel;
   review_status: ReviewStatus;
   last_screened_date?: string;
