@@ -2,14 +2,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database.session import get_db
-from app.models.screening import ScreeningAssessment
 from app.models.patient import Patient
-from app.schemas.screening import (
-    ScreeningAssessmentResponse,
-    ReviewStatusUpdate
-)
+from app.schemas.screening import ScreeningAssessmentResponse, ReviewStatusUpdate
 from app.schemas.patient import PatientCreate
-from app.services import screening_service, patient_service
+from app.services import patient_service, assessment_service, recommendation_service
 from app.guidelines.engine import evaluate_all_screenings
 from app.services.ai_explainer import generate_screening_explanation
 
@@ -23,29 +19,29 @@ def get_recommendations(
     db: Session = Depends(get_db)
 ):
     """
-    Retrieve clinical recommendations across all patients for overdue, flagged risk, or due soon screenings.
+    Retrieve clinical recommendations across all patients for overdue or flagged risk screenings.
     """
-    query = db.query(ScreeningAssessment).join(Patient).filter(
-        ScreeningAssessment.status.in_(["overdue", "flagged_risk", "due_soon"])
+    recs = recommendation_service.get_recommendations(
+        db,
+        category=category,
+        review_status=review_status
     )
-    if category:
-        query = query.filter(ScreeningAssessment.category == category)
-    if review_status:
-        query = query.filter(ScreeningAssessment.review_status == review_status)
-    if status:
-        query = query.filter(ScreeningAssessment.status == status)
-
-    assessments = query.order_by(
-        ScreeningAssessment.status.desc(),
-        ScreeningAssessment.risk_level.desc()
-    ).all()
-
     result = []
-    for a in assessments:
-        item = ScreeningAssessmentResponse.model_validate(a)
-        if a.patient:
-            item.patient_name = a.patient.full_name
-        result.append(item)
+    for r in recs:
+        result.append(ScreeningAssessmentResponse(
+            id=r.id,
+            patient_id=r.patient_id,
+            patient_name=r.patient_name,
+            category=r.screening_category,
+            status="overdue" if r.priority in ["urgent", "moderate"] else "due_soon",
+            risk_level="high" if r.priority == "urgent" else "moderate" if r.priority == "moderate" else "low",
+            review_status=r.professional_review_status,
+            flagged_reasons=r.flagged_reasons,
+            suggested_next_steps=r.suggested_next_steps,
+            guideline_source="USPSTF / ADA / ACC-AHA",
+            assessment_summary=r.recommendation,
+            ai_explanation=r.rationale
+        ))
     return result
 
 @router.put("/{assessment_id}/review", response_model=ScreeningAssessmentResponse)
@@ -55,18 +51,27 @@ def update_review_status(
     db: Session = Depends(get_db)
 ):
     """
-    Update clinical review status (pending_review, acknowledged, ordered).
+    Update clinical review status.
     """
-    assessment = db.query(ScreeningAssessment).filter(ScreeningAssessment.id == assessment_id).first()
-    if not assessment:
-        raise HTTPException(status_code=404, detail="Screening assessment not found")
-    assessment.review_status = update.review_status
-    db.commit()
-    db.refresh(assessment)
-    item = ScreeningAssessmentResponse.model_validate(assessment)
-    if assessment.patient:
-        item.patient_name = assessment.patient.full_name
-    return item
+    rec = recommendation_service.update_recommendation_status(db, assessment_id, update.review_status)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    
+    patient = db.query(Patient).filter(Patient.id == rec.patient_id).first()
+    return ScreeningAssessmentResponse(
+        id=rec.id,
+        patient_id=rec.patient_id,
+        patient_name=patient.full_name if patient else "Patient",
+        category=rec.screening_category,
+        status="overdue" if rec.priority in ["urgent", "moderate"] else "due_soon",
+        risk_level="high" if rec.priority == "urgent" else "moderate" if rec.priority == "moderate" else "low",
+        review_status=rec.professional_review_status,
+        flagged_reasons=[rec.rationale],
+        suggested_next_steps=[rec.recommendation],
+        guideline_source="USPSTF / ADA / ACC-AHA",
+        assessment_summary=rec.recommendation,
+        ai_explanation=rec.rationale
+    )
 
 @router.get("/patient/{patient_id}", response_model=List[ScreeningAssessmentResponse])
 def get_patient_screenings(
@@ -74,18 +79,37 @@ def get_patient_screenings(
     db: Session = Depends(get_db)
 ):
     """
-    Get all screening assessments for a patient across all 5 pathways.
+    Get all 5 screening pathway evaluations for a patient.
     """
     patient = patient_service.get_patient_by_id(db, patient_id)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     
-    screenings = screening_service.get_patient_screenings(db, patient_id)
+    evals = evaluate_all_screenings(patient)
     result = []
-    for a in screenings:
-        item = ScreeningAssessmentResponse.model_validate(a)
-        item.patient_name = patient.full_name
-        result.append(item)
+    for ev in evals:
+        cat = ev["category"]
+        # Lookup existing recommendation if any
+        recs = recommendation_service.get_recommendations(db, patient_id=patient_id, category=cat)
+        review_st = recs[0].professional_review_status if recs else "pending_review"
+        rec_id = recs[0].id if recs else None
+
+        result.append(ScreeningAssessmentResponse(
+            id=rec_id,
+            patient_id=patient.id,
+            patient_name=patient.full_name,
+            category=cat,
+            status=ev["status"],
+            risk_level=ev["risk_level"],
+            review_status=review_st,
+            last_screened_date=ev["last_screened_date"],
+            next_due_date=ev["next_due_date"],
+            flagged_reasons=ev["flagged_reasons"],
+            suggested_next_steps=ev["suggested_next_steps"],
+            guideline_source=ev["guideline_source"],
+            assessment_summary=ev["assessment_summary"],
+            ai_explanation=ev.get("ai_explanation")
+        ))
     return result
 
 @router.post("/evaluate/{patient_id}", response_model=List[ScreeningAssessmentResponse])
@@ -94,55 +118,64 @@ def re_evaluate_patient_screenings(
     db: Session = Depends(get_db)
 ):
     """
-    Re-evaluate all screening guidelines for a patient and update AI explanations.
+    Re-evaluate all screening guidelines for a patient and update recommendations.
     """
     patient = patient_service.get_patient_by_id(db, patient_id)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     
-    screenings = screening_service.evaluate_and_save_patient_screenings(db, patient)
-    result = []
-    for a in screenings:
-        item = ScreeningAssessmentResponse.model_validate(a)
-        item.patient_name = patient.full_name
-        result.append(item)
-    return result
+    assessment_service.run_patient_assessment(db, patient)
+    return get_patient_screenings(patient_id, db)
 
 @router.post("/simulate", response_model=List[ScreeningAssessmentResponse])
-def simulate_screening_assessment(
-    patient_in: PatientCreate
-):
+def simulate_screening(patient_in: PatientCreate):
     """
-    Simulate screening guideline evaluation for any transient or walk-in patient profile.
+    Simulate guideline evaluation for transient patient parameters.
     """
-    # Create transient patient object for evaluation
-    patient = Patient(**patient_in.model_dump())
-    results = evaluate_all_screenings(patient)
-    assessments = []
-    for res in results:
-        ai_exp = generate_screening_explanation(
-            category=res["category"],
-            patient_name=patient.full_name,
-            age=patient.age,
-            status=res["status"],
-            risk_level=res["risk_level"],
-            flagged_reasons=res["flagged_reasons"],
-            suggested_next_steps=res["suggested_next_steps"],
-            guideline_source=res["guideline_source"]
-        )
-        assessments.append(ScreeningAssessmentResponse(
+    patient = Patient(
+        patient_reference="SW-SIM",
+        full_name=patient_in.full_name or f"{patient_in.first_name} {patient_in.last_name}",
+        date_of_birth=patient_in.date_of_birth,
+        sex=patient_in.sex.lower()
+    )
+    from app.models.medical_history import MedicalHistory
+    med = MedicalHistory(
+        smoking_status="active_smoker" if patient_in.is_smoker else "never_smoker",
+        cervix_present=patient_in.cervix_present
+    )
+    med.measurements = {
+        "bmi": patient_in.bmi,
+        "systolic_bp": patient_in.systolic_bp,
+        "diastolic_bp": patient_in.diastolic_bp,
+        "fasting_glucose": patient_in.fasting_glucose,
+        "hba1c": patient_in.hba1c,
+        "total_cholesterol": patient_in.total_cholesterol,
+        "ldl_cholesterol": patient_in.ldl_cholesterol
+    }
+    fam = []
+    if patient_in.family_history_diabetes: fam.append("diabetes")
+    if patient_in.family_history_cad: fam.append("early_cad")
+    if patient_in.family_history_breast_cancer: fam.append("breast_cancer")
+    if patient_in.family_history_colorectal_cancer: fam.append("colorectal_cancer")
+    med.family_history_list = fam
+    patient.medical_history = med
+
+    evals = evaluate_all_screenings(patient)
+    result = []
+    for ev in evals:
+        result.append(ScreeningAssessmentResponse(
             patient_id=0,
             patient_name=patient.full_name,
-            category=res["category"],
-            status=res["status"],
-            risk_level=res["risk_level"],
+            category=ev["category"],
+            status=ev["status"],
+            risk_level=ev["risk_level"],
             review_status="pending_review",
-            last_screened_date=res["last_screened_date"],
-            next_due_date=res["next_due_date"],
-            flagged_reasons=res["flagged_reasons"],
-            suggested_next_steps=res["suggested_next_steps"],
-            guideline_source=res["guideline_source"],
-            assessment_summary=res["assessment_summary"],
-            ai_explanation=ai_exp
+            last_screened_date=ev["last_screened_date"],
+            next_due_date=ev["next_due_date"],
+            flagged_reasons=ev["flagged_reasons"],
+            suggested_next_steps=ev["suggested_next_steps"],
+            guideline_source=ev["guideline_source"],
+            assessment_summary=ev["assessment_summary"],
+            ai_explanation=ev.get("ai_explanation")
         ))
-    return assessments
+    return result

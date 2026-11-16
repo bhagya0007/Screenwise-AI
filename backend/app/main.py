@@ -7,18 +7,23 @@ from app.services.seed_data import seed_database_if_empty
 from app.routes import (
     health_router,
     patients_router,
-    screenings_router,
-    follow_ups_router,
+    assessment_router,
+    recommendations_router,
+    followups_router,
+    analytics_router,
     dashboard_router,
-    analytics_router
+    screenings_router
 )
+
+# Ensure all database tables exist immediately upon import
+Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables
+    # Initialize all database tables
     Base.metadata.create_all(bind=engine)
     
-    # Auto-seed initial realistic demo patient data if empty
+    # Auto-seed initial synthetic demo patient data if database is empty
     db = SessionLocal()
     try:
         seed_database_if_empty(db)
@@ -28,34 +33,47 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
+    title="ScreenWise AI API",
     description="ScreenWise AI - Adult Preventive Healthcare Screening Support Platform",
     version="1.0.0",
     lifespan=lifespan
 )
 
-# CORS Middleware configuration
+# Secure CORS Middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else ["*"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
     allow_headers=["*"],
 )
 
-# Register routes
-app.include_router(health_router, prefix=settings.API_V1_STR)
-app.include_router(patients_router, prefix=settings.API_V1_STR)
-app.include_router(screenings_router, prefix=settings.API_V1_STR)
-app.include_router(follow_ups_router, prefix=settings.API_V1_STR)
-app.include_router(dashboard_router, prefix=settings.API_V1_STR)
-app.include_router(analytics_router, prefix=settings.API_V1_STR)
+# Primary API routes mounted under /api as specified
+app.include_router(health_router, prefix="/api")
+app.include_router(patients_router, prefix="/api")
+app.include_router(assessment_router, prefix="/api")
+app.include_router(recommendations_router, prefix="/api")
+app.include_router(followups_router, prefix="/api")
+app.include_router(analytics_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")
+app.include_router(screenings_router, prefix="/api")
+
+# Also mount under /api/v1 for seamless frontend compatibility
+app.include_router(health_router, prefix="/api/v1")
+app.include_router(patients_router, prefix="/api/v1")
+app.include_router(assessment_router, prefix="/api/v1")
+app.include_router(recommendations_router, prefix="/api/v1")
+app.include_router(followups_router, prefix="/api/v1")
+app.include_router(analytics_router, prefix="/api/v1")
+app.include_router(dashboard_router, prefix="/api/v1")
+app.include_router(screenings_router, prefix="/api/v1")
 
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to ScreenWise AI API",
-        "description": "Adult preventive healthcare screening support platform",
-        "docs_url": "/docs",
-        "health_check": f"{settings.API_V1_STR}/health"
+        "name": "ScreenWise AI API",
+        "description": "Adult Preventive Healthcare Screening Decision Support Platform",
+        "notice": "Screening-support tool, NOT a diagnostic system.",
+        "documentation": "/docs",
+        "health": "/api/health"
     }
