@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, ConfigDict
 from app.schemas.recommendation import RecommendationResponse
 
@@ -14,6 +14,8 @@ class AssessmentResponse(BaseModel):
     missing_information: List[str] = []
     guideline_version: str
     review_status: str
+    professional_review_requirement: Optional[str] = None
+    pathway_assessments: List[Dict[str, Any]] = []
     recommendations: List[RecommendationResponse] = []
 
     model_config = ConfigDict(from_attributes=True)

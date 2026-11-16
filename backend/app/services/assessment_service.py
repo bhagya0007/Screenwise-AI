@@ -6,6 +6,7 @@ from app.models.patient import Patient
 from app.models.assessment import Assessment
 from app.models.recommendation import Recommendation
 from app.guidelines.engine import evaluate_all_screenings
+from app.guidelines.base import MANDATORY_SAFETY_DISCLAIMER
 from app.schemas.assessment import AssessmentResponse
 from app.schemas.recommendation import RecommendationResponse
 
@@ -16,44 +17,40 @@ def run_patient_assessment(db: Session, patient: Patient) -> Assessment:
     within a safe database transaction.
     """
     try:
-        # Run guidelines engine across all pathways
+        # Run Abu Dhabi ADPHC/IFHAS guidelines engine across all pathways
         evaluations = evaluate_all_screenings(patient)
         
         all_flags = []
         all_missing_info = []
         explanation_blocks = []
 
-        # Check for missing clinical data
-        if patient.bmi is None:
-            all_missing_info.append("Body Mass Index (BMI) not recorded")
-        if patient.systolic_bp is None or patient.diastolic_bp is None:
-            all_missing_info.append("Recent resting Blood Pressure measurement missing")
-        if patient.last_lipid_panel_date is None and patient.age >= 40:
-            all_missing_info.append("Baseline 5-year Lipid Panel not on record")
-        if patient.sex == "female" and patient.age >= 40 and patient.last_mammogram_date is None:
-            all_missing_info.append("Initial baseline screening mammogram not documented")
-        if patient.age >= 45 and patient.last_colorectal_screen_date is None:
-            all_missing_info.append("Baseline colorectal cancer screening not documented")
-
-        # Collect flags and rationales from evaluations
+        # Collect pathway evaluations, missing info, flags, and rationales
         for ev in evaluations:
             category = ev["category"]
             cat_label = category.replace("_", " ").title()
+            flag_status = ev.get("flag_status", ev["status"])
             status = ev["status"]
             risk_level = ev["risk_level"]
-            reasons = ev["flagged_reasons"]
-            
-            if status in ["overdue", "flagged_risk", "due_soon"]:
+            reasons = ev.get("flagged_reasons", [])
+            missing = ev.get("missing_information", [])
+
+            # Aggregate missing information
+            for m in missing:
+                if m not in all_missing_info:
+                    all_missing_info.append(m)
+
+            # Record clinical flags
+            if flag_status in ["Potentially due", "Potentially overdue", "Requires professional review", "Insufficient information"] or status in ["overdue", "flagged_risk", "due_soon"]:
                 all_flags.extend([f"[{cat_label}] {r}" for r in reasons])
 
             if ev.get("ai_explanation"):
-                explanation_blocks.append(f"### {cat_label} Evaluation:\n{ev['ai_explanation']}")
+                explanation_blocks.append(f"### {cat_label} Evaluation ({flag_status}):\n{ev['ai_explanation']}")
 
         overall_explanation = "\n\n".join(explanation_blocks)
         if not overall_explanation:
             overall_explanation = (
                 f"ScreenWise AI Clinical Evaluation for {patient.full_name} (Age {patient.age}, {patient.sex.capitalize()}):\n"
-                f"All assessed preventive health pathways are currently up to date based on USPSTF and ADA clinical guidelines. "
+                f"All assessed preventive health pathways are currently up to date based on ADPHC IFHAS / Weqaya clinical guidelines. "
                 f"Continue routine preventive primary care surveillance."
             )
 
@@ -64,7 +61,7 @@ def run_patient_assessment(db: Session, patient: Patient) -> Assessment:
             identified_flags=json.dumps(all_flags),
             explanation=overall_explanation,
             missing_information=json.dumps(all_missing_info),
-            guideline_version="USPSTF 2024 / ADA 2024 / ACC-AHA 2023",
+            guideline_version="ADPHC 2024 / DoH Abu Dhabi IFHAS & Weqaya Standards",
             review_status="pending_review"
         )
         db.add(assessment)
@@ -78,13 +75,14 @@ def run_patient_assessment(db: Session, patient: Patient) -> Assessment:
             status = ev["status"]
             category = ev["category"]
             risk_level = ev["risk_level"]
-            reasons = ev["flagged_reasons"]
-            steps = ev["suggested_next_steps"]
+            reasons = ev.get("flagged_reasons", [])
+            steps = ev.get("suggested_next_steps", [])
+            flag_status = ev.get("flag_status", "")
 
             priority = "routine"
-            if status == "flagged_risk" or risk_level == "high":
+            if flag_status in ["Requires professional review"] or status == "flagged_risk" or risk_level == "high":
                 priority = "urgent"
-            elif status == "overdue" or risk_level == "moderate":
+            elif flag_status in ["Potentially overdue", "Potentially due"] or status == "overdue" or risk_level == "moderate":
                 priority = "moderate"
 
             suggested_timing = "Within 14 days" if priority == "urgent" else "Within 30–60 days" if priority == "moderate" else "Annual routine"
@@ -138,6 +136,8 @@ def build_assessment_response(assessment: Assessment, patient: Patient) -> Asses
             suggested_next_steps=[r.recommendation]
         ))
 
+    pathway_evals = evaluate_all_screenings(patient)
+
     return AssessmentResponse(
         id=assessment.id,
         patient_id=assessment.patient_id,
@@ -149,5 +149,7 @@ def build_assessment_response(assessment: Assessment, patient: Patient) -> Asses
         missing_information=assessment.missing_info_list,
         guideline_version=assessment.guideline_version,
         review_status=assessment.review_status,
+        professional_review_requirement=MANDATORY_SAFETY_DISCLAIMER,
+        pathway_assessments=pathway_evals,
         recommendations=recs
     )
