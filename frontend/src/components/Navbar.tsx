@@ -1,72 +1,336 @@
-import React, { useEffect, useState } from 'react';
-import { Activity, Plus, CheckCircle2, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
+import {
+  Search,
+  Bell,
+  User,
+  ChevronDown,
+  CheckCircle2,
+  AlertTriangle,
+  ShieldAlert,
+  Plus,
+  ExternalLink,
+  Building2,
+  X,
+} from 'lucide-react';
 import { Button } from './ui/Button';
-import { dashboardService } from '../services/dashboardService';
+import { patientService } from '../services/patientService';
+import { Patient } from '../types';
 
 interface NavbarProps {
   onOpenNewPatientModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
-  const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Patient[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Notifications dropdown
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  // Profile dropdown
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Page titles mapping
+  const getPageMeta = () => {
+    const path = location.pathname;
+    if (path === '/' || path === '/overview') {
+      return { title: 'Overview Dashboard', subtitle: 'Population screening metrics & urgent care needs' };
+    }
+    if (path.startsWith('/patients/')) {
+      return { title: 'Patient Profile', subtitle: 'Clinical history, vitals, biomarkers & screening assessment' };
+    }
+    if (path === '/patients') {
+      return { title: 'Patient Directory', subtitle: 'Surveillance cohort and screening status registry' };
+    }
+    if (path === '/assessment') {
+      return { title: 'Screening Assessment', subtitle: 'Interactive guideline assessment engine & simulator' };
+    }
+    if (path === '/recommendations') {
+      return { title: 'Clinical Recommendations', subtitle: 'Preventive care action pathways requiring provider review' };
+    }
+    if (path === '/follow-ups') {
+      return { title: 'Follow-Up Care Tracker', subtitle: 'Active diagnostic orders, test completion & scheduling' };
+    }
+    if (path === '/analytics') {
+      return { title: 'Population Analytics', subtitle: 'Screening coverage rates, care gaps & demographic adherence' };
+    }
+    if (path === '/settings') {
+      return { title: 'System & Guideline Settings', subtitle: 'Clinical parameters, practice configuration & system health' };
+    }
+    return { title: 'ScreenWise AI', subtitle: 'Adult Preventive Healthcare Support Platform' };
+  };
+
+  const { title, subtitle } = getPageMeta();
+
+  // Handle global search debounce
   useEffect(() => {
-    dashboardService.getHealth()
-      .then((res) => {
-        setBackendHealthy(res.status === 'healthy');
-      })
-      .catch(() => {
-        setBackendHealthy(false);
-      });
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const handler = setTimeout(() => {
+      patientService.getAll(searchQuery)
+        .then((data) => {
+          setSearchResults(data);
+          setShowSearchResults(true);
+        })
+        .catch((err) => console.error(err))
+        .finally(() => setIsSearching(false));
+    }, 200);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Handle outside clicks to close menus
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowSearchResults(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-            <Activity className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-lg text-slate-900 tracking-tight">ScreenWise AI</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">
-                Preventive Health
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 hidden sm:block">
-              Adult Preventive Care & Screening Surveillance Platform
-            </p>
-          </div>
-        </div>
+  const dummyNotifications = [
+    {
+      id: 1,
+      title: 'Robert Chen (52y): Colorectal Screening Overdue',
+      desc: 'No screening colonoscopy or FIT on record. Paternal history of CRC.',
+      type: 'danger',
+      time: '10m ago',
+      patientId: 1,
+    },
+    {
+      id: 2,
+      title: 'Elena Rodriguez (42y): Mammogram Recommended',
+      desc: 'USPSTF 2024 age window reached; first-degree family history noted.',
+      type: 'warning',
+      time: '1h ago',
+      patientId: 2,
+    },
+    {
+      id: 3,
+      title: 'Marcus Washington (64y): Fasting Glucose Flagged',
+      desc: 'Impaired glucose (119 mg/dL) meets prediabetes surveillance criteria.',
+      type: 'warning',
+      time: '3h ago',
+      patientId: 3,
+    },
+  ];
 
-        <div className="flex items-center gap-3">
-          {/* Health Status Indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-50 border-slate-200 text-slate-600">
-            {backendHealthy === null ? (
-              <span className="h-2 w-2 rounded-full bg-slate-400 animate-pulse" />
-            ) : backendHealthy ? (
-              <>
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-emerald-700">API Connected</span>
-              </>
-            ) : (
-              <>
-                <span className="h-2 w-2 rounded-full bg-rose-500" />
-                <span className="text-rose-700">API Offline</span>
-              </>
+  return (
+    <header className="sticky top-0 z-30 bg-white border-b border-slate-200/90 h-16 px-6 flex items-center justify-between">
+      {/* Page Title & Subtitle */}
+      <div className="min-w-0 pr-4">
+        <h1 className="text-base font-bold text-[#173A56] tracking-tight truncate">
+          {title}
+        </h1>
+        <p className="text-[11px] text-slate-500 truncate hidden sm:block">
+          {subtitle}
+        </p>
+      </div>
+
+      {/* Center Search & Right Actions */}
+      <div className="flex items-center gap-3">
+        {/* Global Search Bar */}
+        <div ref={searchContainerRef} className="relative w-52 sm:w-72 md:w-80">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search patients, ID, DOB..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (searchResults.length > 0) setShowSearchResults(true);
+              }}
+              className="w-full bg-[#F6F8FB] border border-slate-200 rounded-lg pl-8 pr-7 py-1.5 text-xs text-[#173A56] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#378C83] focus:bg-white transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
 
-          <Button
-            onClick={onOpenNewPatientModal}
-            variant="primary"
-            size="sm"
-            className="shadow-sm"
+          {/* Search Dropdown Results */}
+          {showSearchResults && (
+            <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-80 overflow-y-auto">
+              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Matching Patients ({searchResults.length})
+              </div>
+              {searchResults.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-400">
+                  No matching patients found.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {searchResults.map((patient) => (
+                    <button
+                      key={patient.id}
+                      onClick={() => {
+                        setShowSearchResults(false);
+                        setSearchQuery('');
+                        navigate(`/patients/${patient.id}`);
+                      }}
+                      className="w-full px-3.5 py-2.5 text-left hover:bg-[#F6F8FB] flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <div>
+                        <p className="text-xs font-semibold text-[#173A56]">{patient.full_name}</p>
+                        <p className="text-[10px] text-slate-500">
+                          {patient.age}y • {patient.sex} • DOB: {patient.date_of_birth}
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-mono font-medium text-slate-400">
+                        SW-{100 + patient.id}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Global Action: Add Patient */}
+        <Button
+          onClick={onOpenNewPatientModal}
+          variant="teal"
+          size="sm"
+          className="hidden sm:inline-flex"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>New Patient</span>
+        </Button>
+
+        {/* Notifications Popover */}
+        <div ref={notificationsRef} className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="p-2 rounded-lg text-slate-500 hover:text-[#173A56] hover:bg-slate-100 transition-colors relative cursor-pointer"
+            title="Clinical Alerts"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Patient</span>
-          </Button>
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+              <div className="px-4 py-3 bg-[#173A56] text-white flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold tracking-tight">Clinical Alerts & Overdue Needs</h4>
+                  <p className="text-[10px] text-slate-300">Preventive screening surveillance feed</p>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white">
+                  3 Overdue
+                </span>
+              </div>
+              <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+                {dummyNotifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    onClick={() => {
+                      setShowNotifications(false);
+                      navigate(`/patients/${notif.patientId}`);
+                    }}
+                    className="p-3.5 hover:bg-[#F6F8FB] transition-colors cursor-pointer flex gap-3 items-start"
+                  >
+                    <div className="mt-0.5 p-1 rounded-md bg-rose-50 text-rose-600 shrink-0">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-[#173A56]">{notif.title}</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2 leading-snug">
+                        {notif.desc}
+                      </p>
+                      <span className="text-[10px] text-slate-400 mt-1 block">{notif.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                <Link
+                  to="/recommendations"
+                  onClick={() => setShowNotifications(false)}
+                  className="text-xs font-semibold text-[#378C83] hover:text-[#2c726a]"
+                >
+                  View All Recommendations →
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Profile Menu Dropdown */}
+        <div ref={profileRef} className="relative">
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-lg border border-slate-200 hover:border-slate-300 bg-white cursor-pointer transition-colors"
+          >
+            <div className="w-6 h-6 rounded-md bg-[#173A56] text-white flex items-center justify-center font-bold text-[10px]">
+              JV
+            </div>
+            <div className="text-left hidden md:block">
+              <p className="text-xs font-semibold text-[#173A56] leading-none">Dr. J. Vance, MD</p>
+              <p className="text-[10px] text-slate-500 leading-none mt-0.5">Preventive Care</p>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+
+          {showProfileMenu && (
+            <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 text-xs">
+              <div className="px-3 py-2 border-b border-slate-100">
+                <p className="font-bold text-[#173A56]">Dr. Jennifer Vance, MD</p>
+                <p className="text-[11px] text-slate-500">Chief of Preventive Medicine</p>
+                <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-[#378C83] font-medium">
+                  <Building2 className="w-3 h-3" />
+                  <span>Northwest Health Center #402</span>
+                </div>
+              </div>
+              <div className="py-1">
+                <Link
+                  to="/settings"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="block px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700"
+                >
+                  Clinical Guidelines Preferences
+                </Link>
+                <Link
+                  to="/analytics"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="block px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700"
+                >
+                  Population Performance
+                </Link>
+              </div>
+              <div className="border-t border-slate-100 pt-1 mt-1 px-3 py-1.5 text-[10px] text-slate-400">
+                Signed in as clinician • USPSTF 2024 Engine
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

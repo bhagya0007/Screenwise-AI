@@ -8,36 +8,37 @@ interface ClinicalDisclaimerProps {
 export const ClinicalDisclaimer: React.FC<ClinicalDisclaimerProps> = ({ variant = 'banner' }) => {
   if (variant === 'compact') {
     return (
-      <div className="flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/80">
-        <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600" />
-        <span>Screening Decision Support Tool — Not a Diagnostic System. Verify with primary care provider.</span>
+      <div className="flex items-center gap-2 text-xs font-medium text-slate-700 bg-white px-3.5 py-2 rounded-lg border border-slate-200 shadow-xs">
+        <ShieldAlert className="w-4 h-4 shrink-0 text-[#378C83]" />
+        <span>
+          <strong>Clinical Decision Support Tool:</strong> ScreenWise AI assists in screening gap identification. It does not establish clinical diagnoses.
+        </span>
       </div>
     );
   }
 
   if (variant === 'footer') {
     return (
-      <div className="border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
-        <p className="font-semibold text-slate-600">ScreenWise AI — Clinical Decision Support Platform</p>
-        <p className="mt-1 max-w-3xl mx-auto">
-          Notice: ScreenWise AI provides automated preventive screening schedule tracking based on USPSTF, ADA, ACC/AHA, and ASCCP clinical guidelines. 
-          This software is an assistive screening support tool and does not provide medical diagnoses or establish physician-patient relationships. 
-          All clinical actions must be confirmed by a licensed medical professional.
+      <div className="border-t border-slate-200/80 mt-12 py-6 text-center text-xs text-slate-500">
+        <p className="font-semibold text-[#173A56]">ScreenWise AI — Adult Preventive Care Decision Support Platform</p>
+        <p className="mt-1 max-w-3xl mx-auto text-slate-500 leading-relaxed text-[11px]">
+          Clinical Notice: Preventive screening recommendations are evaluated against evidence-based parameters from USPSTF, ADA, ACC/AHA, and ASCCP guidelines. 
+          This software is an assistive surveillance tool and does not formulate medical diagnoses or replace physician judgment. All care plans must be tailored by licensed healthcare professionals.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-to-r from-amber-50 via-amber-50/60 to-blue-50/50 border-b border-amber-200/80 px-4 py-2 text-xs text-amber-900">
+    <div className="bg-[#173A56] text-white px-4 py-2 text-xs border-b border-[#0f2638]">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-          <p>
-            <strong className="font-semibold text-amber-800">Preventive Care Notice:</strong> ScreenWise AI is an evidence-based screening support tool, <span className="underline decoration-amber-400 font-bold">NOT a diagnostic system</span>. All flagged recommendations support clinical workflow and require licensed clinician verification.
+          <AlertCircle className="w-3.5 h-3.5 text-[#378C83] shrink-0" />
+          <p className="text-slate-200">
+            <strong className="text-white font-semibold">Clinical Support Aid:</strong> ScreenWise AI identifies overdue preventive screenings. <span className="text-[#48a89d] font-medium">NOT a diagnostic system</span>. All recommendations require licensed clinician confirmation.
           </p>
         </div>
-        <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200/80 text-amber-800 uppercase tracking-wider">
+        <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#378C83]/30 text-[#48a89d] border border-[#378C83]/40 uppercase tracking-wider">
           Decision Support
         </span>
       </div>

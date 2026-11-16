@@ -9,7 +9,8 @@ from app.routes import (
     patients_router,
     screenings_router,
     follow_ups_router,
-    dashboard_router
+    dashboard_router,
+    analytics_router
 )
 
 @asynccontextmanager
@@ -48,6 +49,7 @@ app.include_router(patients_router, prefix=settings.API_V1_STR)
 app.include_router(screenings_router, prefix=settings.API_V1_STR)
 app.include_router(follow_ups_router, prefix=settings.API_V1_STR)
 app.include_router(dashboard_router, prefix=settings.API_V1_STR)
+app.include_router(analytics_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():

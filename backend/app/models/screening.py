@@ -19,6 +19,9 @@ class ScreeningAssessment(Base):
     # Risk Level: "low", "moderate", "high", "not_applicable"
     risk_level = Column(String(20), nullable=False, default="low")
 
+    # Professional Review Status: "pending_review", "acknowledged", "ordered"
+    review_status = Column(String(30), nullable=False, default="pending_review")
+
     last_screened_date = Column(Date, nullable=True)
     next_due_date = Column(Date, nullable=True)
     

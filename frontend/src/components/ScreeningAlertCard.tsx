@@ -104,7 +104,7 @@ export const ScreeningAlertCard: React.FC<ScreeningAlertCardProps> = ({
       case 'moderate':
         return <Badge variant="warning" size="sm">Moderate Risk</Badge>;
       case 'low':
-        return <Badge variant="info" size="sm">Standard / Low</Badge>;
+        return <Badge variant="teal" size="sm">Standard / Low</Badge>;
       default:
         return null;
     }

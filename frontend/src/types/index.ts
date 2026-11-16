@@ -16,6 +16,8 @@ export type ScreeningStatus =
 
 export type RiskLevel = 'low' | 'moderate' | 'high' | 'not_applicable';
 
+export type ReviewStatus = 'pending_review' | 'acknowledged' | 'ordered';
+
 export type FollowUpStatus = 'pending' | 'scheduled' | 'completed' | 'overdue' | 'deferred';
 export type FollowUpPriority = 'routine' | 'moderate' | 'urgent';
 export type FollowUpActionType = 'lab_test' | 'imaging' | 'consultation' | 'lifestyle' | 'vaccine';
@@ -101,9 +103,11 @@ export interface PatientCreateInput {
 export interface ScreeningAssessment {
   id?: number;
   patient_id: number;
+  patient_name?: string;
   category: ScreeningCategory;
   status: ScreeningStatus;
   risk_level: RiskLevel;
+  review_status: ReviewStatus;
   last_screened_date?: string;
   next_due_date?: string;
   flagged_reasons: string[];
@@ -179,4 +183,42 @@ export interface HealthStatus {
   environment: string;
   database: string;
   timestamp: string;
+}
+
+export interface PopulationAnalyticsData {
+  summary: {
+    total_patients: number;
+    total_screenings: number;
+    coverage_rate: number;
+    care_gap_count: number;
+    total_follow_ups: number;
+    completed_follow_ups: number;
+    task_completion_rate: number;
+  };
+  pathway_metrics: {
+    category: string;
+    name: string;
+    total_eligible: number;
+    up_to_date: number;
+    overdue: number;
+    flagged_risk: number;
+    adherence_rate: number;
+  }[];
+  age_cohorts: {
+    cohort: string;
+    patient_count: number;
+    screenings_evaluated: number;
+    up_to_date: number;
+    care_gaps: number;
+    adherence_rate: number;
+  }[];
+  recent_activity: {
+    id: string;
+    type: string;
+    action: string;
+    description: string;
+    time: string;
+    status: string;
+    patient_id?: number;
+  }[];
 }

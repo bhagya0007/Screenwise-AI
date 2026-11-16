@@ -113,7 +113,7 @@ export const GuidelinesPage: React.FC = () => {
                   <CardTitle className="text-base font-semibold text-slate-900">{g.title}</CardTitle>
                   <p className="text-xs text-slate-500 mt-0.5">{g.source}</p>
                 </div>
-                <Badge variant="purple">{g.badge}</Badge>
+                <Badge variant="navy">{g.badge}</Badge>
               </div>
             </CardHeader>
 

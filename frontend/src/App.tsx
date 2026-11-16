@@ -5,8 +5,10 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PatientsPage } from './pages/PatientsPage';
 import { PatientDetailPage } from './pages/PatientDetailPage';
 import { ScreeningAssessmentPage } from './pages/ScreeningAssessmentPage';
+import { RecommendationsPage } from './pages/RecommendationsPage';
 import { FollowUpsPage } from './pages/FollowUpsPage';
-import { GuidelinesPage } from './pages/GuidelinesPage';
+import { PopulationAnalyticsPage } from './pages/PopulationAnalyticsPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 export function App() {
   return (
@@ -14,11 +16,14 @@ export function App() {
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="overview" element={<DashboardPage />} />
           <Route path="patients" element={<PatientsPage />} />
           <Route path="patients/:id" element={<PatientDetailPage />} />
-          <Route path="screenings" element={<ScreeningAssessmentPage />} />
+          <Route path="assessment" element={<ScreeningAssessmentPage />} />
+          <Route path="recommendations" element={<RecommendationsPage />} />
           <Route path="follow-ups" element={<FollowUpsPage />} />
-          <Route path="guidelines" element={<GuidelinesPage />} />
+          <Route path="analytics" element={<PopulationAnalyticsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
