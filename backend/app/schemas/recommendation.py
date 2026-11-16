@@ -13,6 +13,7 @@ class RecommendationResponse(BaseModel):
     suggested_timing: str
     priority: str # "urgent", "moderate", "routine"
     professional_review_status: str # "pending_review", "acknowledged", "ordered"
+    requires_professional_review: bool = True
 
     # Convenience compatibility fields for frontend
     category: Optional[str] = None

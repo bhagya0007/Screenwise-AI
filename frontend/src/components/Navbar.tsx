@@ -284,50 +284,92 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
           )}
         </div>
 
-        {/* Profile Menu Dropdown */}
+        {/* Profile Menu Dropdown & Safe Demo Switcher */}
         <div ref={profileRef} className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-lg border border-slate-200 hover:border-slate-300 bg-white cursor-pointer transition-colors"
           >
             <div className="w-6 h-6 rounded-md bg-[#173A56] text-white flex items-center justify-center font-bold text-[10px]">
-              JV
+              FA
             </div>
             <div className="text-left hidden md:block">
-              <p className="text-xs font-semibold text-[#173A56] leading-none">Dr. J. Vance, MD</p>
-              <p className="text-[10px] text-slate-500 leading-none mt-0.5">Preventive Care</p>
+              <p className="text-xs font-semibold text-[#173A56] leading-none">Dr. Fatima Al Suwaidi</p>
+              <p className="text-[10px] text-[#378C83] font-medium leading-none mt-0.5">Lead Clinician (SEHA)</p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 text-xs">
+            <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 text-xs">
               <div className="px-3 py-2 border-b border-slate-100">
-                <p className="font-bold text-[#173A56]">Dr. Jennifer Vance, MD</p>
-                <p className="text-[11px] text-slate-500">Chief of Preventive Medicine</p>
+                <div className="flex items-center justify-between">
+                  <p className="font-bold text-[#173A56]">Dr. Fatima Al Suwaidi, MD</p>
+                  <span className="text-[9px] bg-teal-50 text-[#378C83] border border-teal-200 px-1.5 py-0.5 rounded font-semibold">Clinician</span>
+                </div>
+                <p className="text-[11px] text-slate-500">Consultant Family Medicine</p>
                 <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-[#378C83] font-medium">
                   <Building2 className="w-3 h-3" />
-                  <span>Northwest Health Center #402</span>
+                  <span>Abu Dhabi Health Services (SEHA)</span>
                 </div>
               </div>
+
+              {/* Safe Demo Role Switcher */}
+              <div className="py-2 px-2 bg-slate-50 rounded-lg my-1.5 border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Hackathon Role Switcher
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={async () => {
+                      localStorage.setItem('screenwise_role', 'clinician');
+                      await fetch('/api/auth/demo-switch?role=clinician', { method: 'POST' });
+                      setShowProfileMenu(false);
+                      window.location.reload();
+                    }}
+                    className="p-1.5 text-left rounded border border-[#173A56] bg-white text-[#173A56] font-semibold text-[10px] hover:bg-slate-100 cursor-pointer"
+                  >
+                    Dr. Fatima (MD)
+                  </button>
+                  <button
+                    onClick={async () => {
+                      localStorage.setItem('screenwise_role', 'nurse');
+                      await fetch('/api/auth/demo-switch?role=nurse', { method: 'POST' });
+                      setShowProfileMenu(false);
+                      window.location.reload();
+                    }}
+                    className="p-1.5 text-left rounded border border-[#378C83] bg-white text-[#378C83] font-semibold text-[10px] hover:bg-slate-100 cursor-pointer"
+                  >
+                    Nurse Maryam (RN)
+                  </button>
+                </div>
+              </div>
+
               <div className="py-1">
+                <Link
+                  to="/landing"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="block px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 font-medium"
+                >
+                  Platform Overview & Presentation
+                </Link>
+                <Link
+                  to="/guidelines"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="block px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 font-medium"
+                >
+                  ADPHC Guidelines Library
+                </Link>
                 <Link
                   to="/settings"
                   onClick={() => setShowProfileMenu(false)}
-                  className="block px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700"
+                  className="block px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 font-medium"
                 >
-                  Clinical Guidelines Preferences
-                </Link>
-                <Link
-                  to="/analytics"
-                  onClick={() => setShowProfileMenu(false)}
-                  className="block px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700"
-                >
-                  Population Performance
+                  Clinical System Preferences
                 </Link>
               </div>
               <div className="border-t border-slate-100 pt-1 mt-1 px-3 py-1.5 text-[10px] text-slate-400">
-                Signed in as clinician • USPSTF 2024 Engine
+                Abu Dhabi ADPHC & DoH 2024 Engine • HIPAA/DoH Safe Demo
               </div>
             </div>
           )}

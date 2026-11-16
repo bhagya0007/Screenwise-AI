@@ -12,7 +12,8 @@ from app.routes import (
     followups_router,
     analytics_router,
     dashboard_router,
-    screenings_router
+    screenings_router,
+    auth_router
 )
 
 # Ensure all database tables exist immediately upon import
@@ -39,10 +40,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Secure CORS Middleware configuration
+# Secure CORS Middleware configuration restricted to authorized origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
+    allow_origins=settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else [settings.CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
     allow_headers=["*"],
@@ -50,6 +51,7 @@ app.add_middleware(
 
 # Primary API routes mounted under /api as specified
 app.include_router(health_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
 app.include_router(patients_router, prefix="/api")
 app.include_router(assessment_router, prefix="/api")
 app.include_router(recommendations_router, prefix="/api")
@@ -60,6 +62,7 @@ app.include_router(screenings_router, prefix="/api")
 
 # Also mount under /api/v1 for seamless frontend compatibility
 app.include_router(health_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1")
 app.include_router(patients_router, prefix="/api/v1")
 app.include_router(assessment_router, prefix="/api/v1")
 app.include_router(recommendations_router, prefix="/api/v1")

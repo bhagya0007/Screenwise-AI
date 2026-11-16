@@ -18,6 +18,7 @@ import {
   Mail,
   Phone,
   CalendarPlus,
+  Edit,
 } from 'lucide-react';
 import { patientService } from '../services/patientService';
 import { screeningService } from '../services/screeningService';
@@ -25,6 +26,7 @@ import { followUpService } from '../services/followUpService';
 import { Patient, ScreeningAssessment, FollowUpTask } from '../types';
 import { ScreeningAlertCard } from '../components/ScreeningAlertCard';
 import { NewFollowUpModal } from '../components/NewFollowUpModal';
+import { EditPatientModal } from '../components/EditPatientModal';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -40,6 +42,7 @@ export const PatientDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [evaluating, setEvaluating] = useState(false);
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<ScreeningAssessment | null>(null);
   const [activeSection, setActiveSection] = useState<'assessments' | 'history' | 'followups'>('assessments');
 
@@ -169,6 +172,14 @@ export const PatientDetailPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setIsEditModalOpen(true)}
+            variant="outline"
+            size="sm"
+          >
+            <Edit className="w-3.5 h-3.5" />
+            <span>Edit Profile & Vitals</span>
+          </Button>
           <Button
             onClick={handleReevaluate}
             variant="outline"
@@ -517,6 +528,14 @@ export const PatientDetailPage: React.FC = () => {
         patientName={patient.full_name}
         assessment={selectedAssessment}
         onTaskCreated={() => loadData()}
+      />
+
+      {/* Edit Patient Modal */}
+      <EditPatientModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        patient={patient}
+        onPatientUpdated={() => loadData()}
       />
     </div>
   );

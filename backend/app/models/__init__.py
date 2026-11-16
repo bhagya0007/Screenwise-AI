@@ -4,6 +4,7 @@ from app.models.screening_history import ScreeningHistory
 from app.models.assessment import Assessment
 from app.models.recommendation import Recommendation
 from app.models.follow_up import FollowUp
+from app.models.user import User
 
 __all__ = [
     "Patient",
@@ -11,5 +12,6 @@ __all__ = [
     "ScreeningHistory",
     "Assessment",
     "Recommendation",
-    "FollowUp"
+    "FollowUp",
+    "User"
 ]

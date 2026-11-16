@@ -6,6 +6,7 @@ from app.routes.followups import router as followups_router
 from app.routes.analytics import router as analytics_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.screenings import router as screenings_router
+from app.routes.auth import router as auth_router
 
 __all__ = [
     "health_router",
@@ -15,5 +16,6 @@ __all__ = [
     "followups_router",
     "analytics_router",
     "dashboard_router",
-    "screenings_router"
+    "screenings_router",
+    "auth_router"
 ]

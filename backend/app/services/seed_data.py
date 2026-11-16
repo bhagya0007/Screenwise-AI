@@ -2,11 +2,52 @@ from datetime import date, timedelta
 from sqlalchemy.orm import Session
 from app.models.patient import Patient
 from app.models.follow_up import FollowUp
+from app.models.user import User
 from app.services.patient_service import create_patient
 from app.services.assessment_service import run_patient_assessment
 from app.schemas.patient import PatientCreate
+from app.core.security import hash_password
+
+def seed_users_if_empty(db: Session):
+    user_count = db.query(User).count()
+    if user_count > 0:
+        return
+
+    demo_users = [
+        User(
+            username="dr.fatima",
+            email="dr.fatima@screenwise.ae",
+            hashed_password=hash_password("Fatima2026!"),
+            full_name="Dr. Fatima Al Suwaidi, MD",
+            role="clinician",
+            organization="Abu Dhabi Health Services (SEHA)",
+            is_active=True
+        ),
+        User(
+            username="nurse.maryam",
+            email="nurse.maryam@screenwise.ae",
+            hashed_password=hash_password("Maryam2026!"),
+            full_name="Maryam Al Hashimi, BSN RN",
+            role="nurse",
+            organization="Al Bateen Healthcare Center, Abu Dhabi",
+            is_active=True
+        ),
+        User(
+            username="admin.zayed",
+            email="admin@screenwise.ae",
+            hashed_password=hash_password("Admin2026!"),
+            full_name="Zayed Al Dhaheri",
+            role="admin",
+            organization="Department of Health Abu Dhabi (DoH)",
+            is_active=True
+        )
+    ]
+    for u in demo_users:
+        db.add(u)
+    db.commit()
 
 def seed_database_if_empty(db: Session):
+    seed_users_if_empty(db)
     count = db.query(Patient).count()
     if count > 0:
         return

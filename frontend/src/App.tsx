@@ -8,12 +8,18 @@ import { ScreeningAssessmentPage } from './pages/ScreeningAssessmentPage';
 import { RecommendationsPage } from './pages/RecommendationsPage';
 import { FollowUpsPage } from './pages/FollowUpsPage';
 import { PopulationAnalyticsPage } from './pages/PopulationAnalyticsPage';
+import { GuidelinesPage } from './pages/GuidelinesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { LandingPage } from './pages/LandingPage';
 
 export function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Landing & Product Overview */}
+        <Route path="/landing" element={<LandingPage />} />
+
+        {/* Main Application Layout */}
         <Route path="/" element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="overview" element={<DashboardPage />} />
@@ -23,6 +29,7 @@ export function App() {
           <Route path="recommendations" element={<RecommendationsPage />} />
           <Route path="follow-ups" element={<FollowUpsPage />} />
           <Route path="analytics" element={<PopulationAnalyticsPage />} />
+          <Route path="guidelines" element={<GuidelinesPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

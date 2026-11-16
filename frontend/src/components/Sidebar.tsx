@@ -11,6 +11,8 @@ import {
   HeartPulse,
   Activity,
   ShieldAlert,
+  BookOpen,
+  Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -59,6 +61,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       to: '/analytics',
       label: 'Population Analytics',
       icon: BarChart3,
+      badge: null,
+    },
+    {
+      to: '/guidelines',
+      label: 'Guidelines & Safety',
+      icon: BookOpen,
       badge: null,
     },
     {
@@ -129,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Active Guidelines Reference */}
-        <div className="mt-8 mx-2 p-3 rounded-lg bg-[#0f2638]/70 border border-[#244e73]/50">
+        <div className="mt-6 mx-2 p-3 rounded-lg bg-[#0f2638]/70 border border-[#244e73]/50">
           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#48a89d] mb-1.5">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Active Protocols</span>
@@ -137,16 +145,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="space-y-1 text-[11px] text-slate-300">
             <div className="flex justify-between items-center text-slate-400">
               <span>Diabetes</span>
-              <span className="font-mono text-[10px] text-slate-300">ADA/USPSTF</span>
+              <span className="font-mono text-[10px] text-teal-300">ADPHC IFHAS</span>
             </div>
             <div className="flex justify-between items-center text-slate-400">
               <span>Cardiovascular</span>
-              <span className="font-mono text-[10px] text-slate-300">ACC/AHA</span>
+              <span className="font-mono text-[10px] text-teal-300">Weqaya Standard</span>
             </div>
             <div className="flex justify-between items-center text-slate-400">
               <span>Cancer Pathways</span>
-              <span className="font-mono text-[10px] text-slate-300">USPSTF 2024</span>
+              <span className="font-mono text-[10px] text-teal-300">ADPHC 2024</span>
             </div>
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-[#244e73]/50 text-center">
+            <NavLink
+              to="/landing"
+              className="text-[10px] text-[#48a89d] hover:text-white font-medium block"
+            >
+              ★ Platform Overview & Demo →
+            </NavLink>
           </div>
         </div>
       </div>

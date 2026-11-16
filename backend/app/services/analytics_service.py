@@ -212,7 +212,7 @@ def compute_population_metrics(db: Session) -> Dict[str, Any]:
         n = c_info["patients"]
         sc = c_info["screenings"]
         is_suppressed = n > 0 and n < CELL_SUPPRESSION_THRESHOLD
-        sample_too_small = sc < CELL_SUPPRESSION_THRESHOLD
+        sample_too_small = n < CELL_SUPPRESSION_THRESHOLD or sc < CELL_SUPPRESSION_THRESHOLD
         rate = round((c_info["up_to_date"] / sc * 100), 1) if sc >= CELL_SUPPRESSION_THRESHOLD else None
 
         age_cohort_stats.append({
@@ -233,7 +233,7 @@ def compute_population_metrics(db: Session) -> Dict[str, Any]:
         n = g_info["patients"]
         sc = g_info["screenings"]
         is_suppressed = n > 0 and n < CELL_SUPPRESSION_THRESHOLD
-        sample_too_small = sc < CELL_SUPPRESSION_THRESHOLD
+        sample_too_small = n < CELL_SUPPRESSION_THRESHOLD or sc < CELL_SUPPRESSION_THRESHOLD
         rate = round((g_info["up_to_date"] / sc * 100), 1) if sc >= CELL_SUPPRESSION_THRESHOLD else None
 
         gender_cohort_stats.append({
@@ -311,6 +311,7 @@ def compute_population_metrics(db: Session) -> Dict[str, Any]:
         "tasks": tasks,
         "safeguards": {
             "aggregate_only": True,
+            "small_cell_suppression_active": True,
             "suppression_threshold": CELL_SUPPRESSION_THRESHOLD,
             "is_synthetic_demo": True,
             "data_notice": "Synthetic Demonstration Dataset: Data shown are generated from synthetic demo profiles for adult preventive screening evaluation. Not real patient outcomes.",

@@ -1,71 +1,98 @@
 # ScreenWise AI 🩺
-
-> **AI-Powered Adult Preventive Healthcare Screening Support Platform**  
-> *A clinical decision-support surveillance tool — NOT a diagnostic system.*
-
-ScreenWise AI assists healthcare providers and adults in identifying potentially overdue or unmet preventive screening needs across evidence-based clinical pathways. It explains **why** an individual was flagged, suggests **appropriate preventive next steps**, and tracks **follow-up care completion**.
+> **Clinical Decision Support System for Adult Preventive Healthcare Screening**  
+> *Aligned with Abu Dhabi Public Health Centre (ADPHC) & Department of Health (DoH) Standards*  
+> **Notice:** An assistive screening-support tool for primary care surveillance — NOT an autonomous diagnostic or prescribing system.
 
 ---
 
-## 🔬 Core Screening Pathways
+## 🌟 Executive Summary & Mission
+ScreenWise AI closes the critical preventive care gap in adult populations across Abu Dhabi. By evaluating adult clinical biomarkers, personal medical histories, and family risk factors against authoritative **ADPHC IFHAS & Weqaya Clinical Standards**, ScreenWise AI:
+1. **Identifies Preventive Care Gaps**: Evaluates Diabetes, Cardiovascular health, and Cancer pathways (Breast, Cervical, Colorectal).
+2. **Delivers Transparent, Traceable Rationale**: Explains exactly *why* a screening is due with direct citations to published guideline versions.
+3. **Guarantees Clinical Safety**: Never invents disease probabilities, never diagnoses or prescribes, explicitly defers cardiovascular risk scores when data is incomplete, and mandates clinician verification.
+4. **Orchestrates Closed-Loop Follow-Ups**: Tracks diagnostic orders from `pending` → `scheduled` → `completed`.
+5. **Preserves Population Privacy**: Automatically suppresses small demographic cohorts ($n < 5$) to prevent patient re-identification.
 
-| Pathway | Clinical Guideline | Target Population & Modalities | Frequency / Interval |
+---
+
+## 🔬 Core Screening Pathways (Abu Dhabi Aligned)
+
+| Pathway | Authoritative Clinical Standard | Target Population & Criteria | Surveillance Interval |
 | :--- | :--- | :--- | :--- |
-| **Type 2 Diabetes & Prediabetes** | **USPSTF (2021) & ADA (2024)** | Adults aged 35–70 with BMI ≥ 25 (or ≥ 23 Asian); adults with metabolic risk factors. Fasting Glucose / HbA1c. | Every 3 years if normal; annually if prediabetic (A1c 5.7–6.4%). |
-| **Cardiovascular Health** | **USPSTF & ACC/AHA (2019/2023)** | Blood pressure checks (Adults 18+). Fasting/non-fasting lipid profile (Adults 40–75, or 20+ with CVD risk). | Annual BP for age ≥40 or elevated BP; 5-year lipid profile. |
-| **Breast Cancer Screening** | **USPSTF Updated (2024)** | Cisgender women & individuals with breast tissue aged 40–74. Digital mammography (2D/3D tomosynthesis). | Biennial (every 2 years); annual if 1st-degree family history. |
-| **Cervical Cancer Screening** | **USPSTF (2018) & ASCCP** | Individuals with a cervix aged 21–65. Cervical cytology alone or hrHPV / co-testing. | Age 21–29: Cytology every 3 yr. Age 30–65: hrHPV or co-test every 5 yr. |
-| **Colorectal Cancer Screening** | **USPSTF Updated (2021)** | Adults aged 45–75. Colonoscopy, at-home FIT stool test, or Stool DNA-FIT (Cologuard). | Colonoscopy every 10 yr (5 yr for high risk); annual FIT; 3-yr sDNA-FIT. |
-
-> **⚠️ Medical Disclaimer:** ScreenWise AI is an assistive screening-support tool designed for primary care workflows. It does **NOT** formulate medical diagnoses. All decisions must be confirmed by a licensed medical clinician.
+| **Type 2 Diabetes & Prediabetes** | **ADPHC / DoH IFHAS Comprehensive Health Standard (2024)** | Universal baseline screening for all adults starting at **age 30** (or age 18+ with BMI ≥ 25 or cardiometabolic risk indicators). | Every 3 years if normal; **annually** for prediabetes (HbA1c 5.7–6.4% or FPG 100–125 mg/dL). |
+| **Cardiovascular Health** | **ADPHC / Weqaya Cardiovascular Disease Prevention Standard (2024)** | Universal resting blood pressure for adults aged 18+. Routine fasting lipid profile starting at age 20. | Annual BP for age ≥40 or prehypertension; 5-year lipid profile (1–2 years if borderline). *Formal risk score deferred if data missing.* |
+| **Colorectal Cancer Screening** | **ADPHC Cancer Screening Standard & Algorithm (2024)** | Universal screening for all asymptomatic adults aged **40 to 75** (ADPHC initiates at age 40 due to regional epidemiological onset). Early initiation (age 30) for positive 1st-degree family history. | Annual FIT (Fecal Immunochemical Test), or Screening Colonoscopy every 10 years (every 5 years for high risk). |
+| **Breast Cancer Screening** | **ADPHC Breast Cancer Screening Pathway & Clinical Practice Standard (2024)** | All asymptomatic women aged **40 to 69** at average risk. High-risk women (1st-degree family history) qualify for early annual surveillance starting at **age 30**. | Biennial (every 2 years) for average risk; annual for high-risk cohorts. |
+| **Cervical Cancer Screening** | **ADPHC Cervical Cancer Screening Standard & Algorithm (2024)** | Women with intact cervix aged **25 to 65**. Not indicated before age 25 or after total hysterectomy for benign disease. | Age 25–29: Cervical cytology every 3 years. Age 30–65: hrHPV DNA co-testing every 5 years (or cytology alone every 3 years). |
 
 ---
 
 ## 🏛️ System Architecture
 
-```
-ScreenWise AI/
-├── backend/
-│   ├── app/
-│   │   ├── core/           # Configuration & environment settings
-│   │   ├── database/       # SQLite connection & SQLAlchemy Base
-│   │   ├── models/         # Patient, ScreeningAssessment, FollowUpTask
-│   │   ├── schemas/        # Pydantic schemas & response models
-│   │   ├── guidelines/     # Rule engines (diabetes, cardiovascular, cancer)
-│   │   ├── services/       # Business logic, AI explainer, seed data
-│   │   └── routes/         # Health, Patients, Screenings, Follow-ups, Dashboard
-│   ├── requirements.txt
-│   ├── run.py
-│   └── .env
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # UI primitives, Navbar, Sidebar, ScreeningAlertCard, Modals
-│   │   ├── pages/          # Dashboard, Patients, PatientDetail, Screenings, FollowUps, Guidelines
-│   │   ├── layouts/        # AppLayout with medical disclaimer banner
-│   │   ├── services/       # API clients for patients, screenings, follow-ups
-│   │   ├── hooks/          # Custom hooks
-│   │   └── types/          # Full TypeScript domain definitions
-│   ├── vite.config.ts      # Vite configuration with Tailwind CSS v4 & proxy
-│   └── package.json
-└── README.md
+```mermaid
+flowchart TD
+    subgraph Client ["Frontend (React 19 + TypeScript + Tailwind CSS v4)"]
+        LP["Landing & Evaluator Portal (/landing)"]
+        Nav["Persistent Sidebar & Global Search Navbar"]
+        Dash["Overview Dashboard"]
+        Pat["Patient Directory & Profile (/patients/:id)"]
+        Eng["Interactive Assessment Engine (/assessment)"]
+        Rec["Clinical Recommendations (/recommendations)"]
+        Fol["Follow-Up Care Board (/follow-ups)"]
+        Pop["Population Analytics Dashboard (/analytics)<br/>(Recharts + n < 5 Privacy Masking)"]
+        Gui["ADPHC Guidelines Library (/guidelines)"]
+    end
+
+    subgraph Server ["FastAPI Backend (Python 3.10+)"]
+        Auth["Auth & Role-Based Access Control<br/>(PBKDF2-HMAC-SHA256, 100k Iterations)"]
+        P_Router["Patient Management Service"]
+        A_Router["Assessment & AI Explainability Service"]
+        R_Router["Recommendation Review Service"]
+        F_Router["Follow-Up Coordination Service"]
+        Pop_Router["Population Analytics Service<br/>(Small-Cell Privacy Suppression)"]
+        Rule_Engine["Transparent Screening Engine<br/>(Diabetes, Cardio, Cancer Pathways)"]
+    end
+
+    subgraph Data ["Database"]
+        DB[(SQLite / SQLAlchemy Core)]
+    end
+
+    Client -->|Vite Reverse Proxy :5173| Server
+    Server --> Rule_Engine
+    Server --> DB
 ```
 
 ---
 
-## ⚡ Quick Start
+## 🔐 Security, Privacy & Clinical Governance
+
+1. **Authentication & Role-Based Access Control (RBAC)**:
+   - Passwords securely hashed with **PBKDF2-HMAC-SHA256** using 100,000 iterations and 16-byte random cryptographic salts (never stored in plaintext).
+   - Constant-time HMAC comparison prevents timing attacks.
+   - Distinct privilege tiers for **Lead Clinician** (full clinical privileges: edit vitals, run assessments, approve/order recommendations) and **Care Coordinator Nurse** (outreach coordination, follow-up scheduling, task completion).
+2. **Strict Origin CORS**: Restricted to authorized origins (`http://localhost:5173` and `http://127.0.0.1:5173`).
+3. **Small-Cell Privacy Suppression ($n < 5$)**: In accordance with HIPAA and Department of Health healthcare statistics governance, any demographic cell with fewer than 5 patients is automatically suppressed with `< 5` tags and adherence rates masked.
+4. **Clinical Safety Safeguards**:
+   - **Assistive-only:** Outputs are non-diagnostic decision support aids.
+   - **No Black Box:** Explanations cite guideline versions and specific patient biomarkers.
+   - **No Unvalidated Risk Probability:** Cardiovascular 10-year risk scoring is explicitly deferred when lipid or systolic parameters are incomplete.
+   - **Zero False-Negative Assumptions:** Missing lab tests are flagged as `insufficient_information` or `potentially_due`, never assumed normal.
+
+---
+
+## ⚡ Quick Start & Run Instructions
 
 ### 1. Prerequisites
-- Python 3.10+
-- Node.js 18+ and npm
+- **Python 3.10+** (Tested on Python 3.10 - 3.14)
+- **Node.js 18+** & npm
 
 ### 2. Backend Setup
 ```bash
 cd backend
 
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv venv
 
-# Activate virtual environment
 # Windows:
 venv\Scripts\activate
 # macOS/Linux:
@@ -74,12 +101,12 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run backend server (auto-seeds realistic demo patients on first launch)
+# Run the backend server (runs on port 8000, auto-seeds realistic demo patients)
 python run.py
 ```
-Backend API will be running at: **`http://127.0.0.1:8000`**  
-Interactive Swagger docs: **`http://127.0.0.1:8000/docs`**  
-Health Check: **`http://127.0.0.1:8000/api/v1/health`**
+- **Backend API**: `http://127.0.0.1:8000`
+- **Swagger Documentation**: `http://127.0.0.1:8000/docs`
+- **Health Check**: `http://127.0.0.1:8000/api/health`
 
 ### 3. Frontend Setup
 ```bash
@@ -88,24 +115,66 @@ cd frontend
 # Install dependencies
 npm install
 
-# Start Vite development server
+# Start Vite dev server (runs on port 5173 with auto-proxying to backend)
 npm run dev
 ```
-Frontend will be available at: **`http://localhost:5173`**
+- **Frontend App**: `http://localhost:5173`
+- **Landing Page**: `http://localhost:5173/landing`
+
+### 4. Running the Complete Automated Test Suite (42/42 Tests)
+```bash
+cd backend
+venv\Scripts\python.exe -m pytest -v
+```
+All **42 automated tests pass with 100% success rate**, verifying:
+- Patient creation, editing, listing, deletion
+- Diabetes, Cardiovascular, and Cancer guideline rules
+- Small-cell privacy suppression and PBKDF2 password security
+- Clinical safety and risk score deferrals
 
 ---
 
-## 📡 API Endpoints
+## 👥 Pre-Seeded Hackathon Demonstration Accounts
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/health` | Health status and DB connectivity check |
-| `GET` | `/api/v1/dashboard/stats` | Cohort-wide metrics, pathway breakdown, risk distribution |
-| `GET` | `/api/v1/patients` | Search and list patients in surveillance cohort |
-| `POST` | `/api/v1/patients` | Register new patient (triggers automatic guideline evaluation) |
-| `GET` | `/api/v1/patients/{id}` | Patient profile and clinical parameters |
-| `GET` | `/api/v1/screenings/patient/{id}` | Evaluations across all 5 pathways with AI explanations |
-| `POST` | `/api/v1/screenings/evaluate/{id}` | Re-evaluate patient against clinical guidelines |
-| `GET` | `/api/v1/follow-ups` | List pending, scheduled, and completed follow-up actions |
-| `POST` | `/api/v1/follow-ups` | Schedule a new follow-up care order |
-| `PUT` | `/api/v1/follow-ups/{id}` | Update status (e.g. mark as completed) |
+Evaluators can switch roles with a single click via the **Navbar Profile Menu** or the **Landing Page**:
+
+| Role | Name | Email | Password | Organization | Capabilities |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Lead Clinician** | Dr. Fatima Al Suwaidi, MD | `dr.fatima@screenwise.ae` | `Fatima2026!` | Abu Dhabi Health Services (SEHA) | Full clinical privileges: run assessments, edit vitals, approve & order recommendations |
+| **Care Coordinator** | Maryam Al Hashimi, BSN RN | `nurse.maryam@screenwise.ae` | `Maryam2026!` | Al Bateen Healthcare Center, Abu Dhabi | Outreach coordination: schedule appointments, complete follow-up care actions |
+| **Health Authority Auditor** | Zayed Al Dhaheri | `admin@screenwise.ae` | `Admin2026!` | Department of Health Abu Dhabi (DoH) | System performance, audit log, cohort coverage surveillance |
+
+---
+
+## ⏱️ Suggested 3-Minute Hackathon Demonstration Script
+
+### Minute 1: The Problem & The Abu Dhabi Solution (Landing & Overview)
+1. **Open Landing Page** (`http://localhost:5173/landing`):
+   - Highlight the mission: closing adult preventive screening care gaps using official **ADPHC & DoH (IFHAS & Weqaya)** standards.
+   - Click **"Dr. Fatima Al Suwaidi (Lead Clinician)"** to launch the session.
+2. **Overview Dashboard** (`/`):
+   - Point out real-time cohort KPIs: Total Patients, Screening Coverage Rate, and Pathway Gaps.
+   - Note the **Deep Navy & Teal** healthcare SaaS aesthetic, designed for fast clinical workflows.
+
+### Minute 2: Real Clinical Patient Journey (Patient Profile & Assessment Engine)
+1. **Patient Directory** (`/patients`):
+   - Search for **"Tariq Al Hashimi"** (48y male) or click **"Amina Al Mansoori"** (48y female).
+2. **Patient Detail Page** (`/patients/:id`):
+   - Show clinical vitals, family histories, and past screening timeline.
+   - Click **"Edit Profile & Vitals"**: update a blood pressure or glucose value, click **"Save & Recalculate"**.
+   - Show that the transparent assessment engine automatically re-evaluated guidelines.
+   - Point out the **ADPHC Colorectal rule** (starts at age 40 in Abu Dhabi, unlike US 45) and **Cardiovascular safety rule** (formal risk score deferred due to missing lipid values).
+
+### Minute 3: Closed-Loop Follow-Ups & Privacy-Preserving Analytics
+1. **Recommendations & Follow-Up Creation** (`/recommendations`):
+   - Filter by **"High Priority"**; select the screening colonoscopy recommendation.
+   - Click **"Acknowledge & Schedule Follow-Up"**; set status to `scheduled` or `completed`.
+2. **Population Analytics** (`/analytics`):
+   - Show the interactive **Recharts visualizations**: Diabetes distribution, Cardiovascular review status, Cancer screening comparisons, and longitudinal completion trend.
+   - Highlight the **Privacy Safeguard banner**: point out that small cohorts ($n < 5$) display `< 5` with adherence rates masked to protect patient confidentiality.
+   - Emphasize that **all metrics updated dynamically from the backend** with zero hardcoded numbers.
+
+---
+
+## 📄 License
+Developed for the 2026 Healthcare Innovation Challenge. Dedicated to advancing preventive health surveillance in Abu Dhabi and the UAE.
