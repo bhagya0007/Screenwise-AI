@@ -201,6 +201,13 @@ export interface HealthStatus {
 export interface PopulationAnalyticsData {
   summary: {
     total_patients: number;
+    patients_assessed?: number;
+    potentially_due_flags?: number;
+    potentially_overdue_flags?: number;
+    completed_screening_actions?: number;
+    pending_followups?: number;
+    scheduled_followups?: number;
+    overdue_followups?: number;
     total_screenings: number;
     coverage_rate: number;
     care_gap_count: number;
@@ -220,11 +227,85 @@ export interface PopulationAnalyticsData {
   age_cohorts: {
     cohort: string;
     patient_count: number;
+    display_patient_count?: string;
     screenings_evaluated: number;
     up_to_date: number;
     care_gaps: number;
     adherence_rate: number;
+    is_suppressed?: boolean;
+    is_sample_too_small?: boolean;
+    reliability_note?: string;
   }[];
+  gender_cohorts?: {
+    gender: string;
+    patient_count: number;
+    display_patient_count?: string;
+    screenings_evaluated: number;
+    up_to_date: number;
+    care_gaps: number;
+    adherence_rate: number;
+    is_suppressed?: boolean;
+    is_sample_too_small?: boolean;
+  }[];
+  diabetes_breakdown?: {
+    up_to_date: number;
+    potentially_due: number;
+    potentially_overdue: number;
+    prediabetes_high_risk: number;
+  };
+  cardiovascular_breakdown?: {
+    up_to_date: number;
+    bp_overdue: number;
+    lipid_overdue: number;
+    stage1_stage2_htn: number;
+    multi_risk_flagged: number;
+  };
+  cancer_breakdown?: {
+    breast: {
+      up_to_date: number;
+      potentially_due: number;
+      potentially_overdue: number;
+      high_risk: number;
+      not_indicated: number;
+    };
+    cervical: {
+      up_to_date: number;
+      potentially_due: number;
+      potentially_overdue: number;
+      not_indicated: number;
+    };
+    colorectal: {
+      up_to_date: number;
+      potentially_due: number;
+      potentially_overdue: number;
+      high_risk: number;
+      not_indicated: number;
+    };
+  };
+  monthly_screening_completion?: {
+    month: string;
+    diabetes: number;
+    cardiovascular: number;
+    cancer_breast: number;
+    cancer_cervical: number;
+    cancer_colorectal: number;
+    total: number;
+  }[];
+  followup_completion_trend?: {
+    month: string;
+    completed: number;
+    scheduled: number;
+    pending: number;
+    total: number;
+  }[];
+  safeguards?: {
+    aggregate_only: boolean;
+    suppression_threshold: number;
+    is_synthetic_demo: boolean;
+    data_notice: string;
+    privacy_notice: string;
+    clinical_notice: string;
+  };
   recent_activity: {
     id: string;
     type: string;
