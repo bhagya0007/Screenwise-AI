@@ -134,15 +134,15 @@ All **42 automated tests pass with 100% success rate**, verifying:
 
 ---
 
-## 👥 Pre-Seeded Hackathon Demonstration Accounts
+## 👥 Demonstration Access & Role-Based Profiles
 
-Evaluators can switch roles with a single click via the **Navbar Profile Menu** or the **Landing Page**:
+For evaluation and demonstration, ScreenWise AI includes built-in role switching. Evaluators can switch roles with a single click directly from the **Navbar Profile Menu** or the **Landing Page** without requiring manual credentials:
 
-| Role | Name | Email | Password | Organization | Capabilities |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Lead Clinician** | Dr. Fatima Al Suwaidi, MD | `dr.fatima@screenwise.ae` | `Fatima2026!` | Abu Dhabi Health Services (SEHA) | Full clinical privileges: run assessments, edit vitals, approve & order recommendations |
-| **Care Coordinator** | Maryam Al Hashimi, BSN RN | `nurse.maryam@screenwise.ae` | `Maryam2026!` | Al Bateen Healthcare Center, Abu Dhabi | Outreach coordination: schedule appointments, complete follow-up care actions |
-| **Health Authority Auditor** | Zayed Al Dhaheri | `admin@screenwise.ae` | `Admin2026!` | Department of Health Abu Dhabi (DoH) | System performance, audit log, cohort coverage surveillance |
+- **Lead Clinician (Dr. Fatima Al Suwaidi, MD)**: Full clinical privileges to run assessments, edit vitals, approve recommendations, and place screening orders.
+- **Care Coordinator (Maryam Al Hashimi, BSN RN)**: Preventive care coordination, scheduling appointments, and completing follow-up actions.
+- **Health Authority Auditor (Zayed Al Dhaheri)**: Population-level surveillance, quality compliance, and screening coverage analytics.
+
+> 🔒 **Security Notice:** All demonstration profiles are synthetic personas created for clinical workflow simulation. No real user credentials or Protected Health Information (PHI) are used or stored.
 
 ---
 
