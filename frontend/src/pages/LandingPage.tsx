@@ -20,6 +20,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { authService } from '../services/authService';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export const LandingPage: React.FC = () => {
       // Set session role
       localStorage.setItem('screenwise_role', role);
       // Trigger demo switch API in background
-      await fetch(`/api/auth/demo-switch?role=${role}`, { method: 'POST' });
+      await authService.switchDemoRole(role);
     } catch (e) {
       console.warn('Role switch:', e);
     }

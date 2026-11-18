@@ -40,10 +40,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Secure CORS Middleware configuration restricted to authorized origins
+# Secure CORS Middleware configuration restricted to authorized origins and cloud deploy preview domains
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else [settings.CORS_ORIGINS],
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|.*\.vercel\.app|.*\.netlify\.app|.*\.onrender\.com|.*\.railway\.app)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
     allow_headers=["*"],

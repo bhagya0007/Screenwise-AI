@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { patientService } from '../services/patientService';
+import { authService } from '../services/authService';
 import { Patient } from '../types';
 
 interface NavbarProps {
@@ -323,7 +324,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
                   <button
                     onClick={async () => {
                       localStorage.setItem('screenwise_role', 'clinician');
-                      await fetch('/api/auth/demo-switch?role=clinician', { method: 'POST' });
+                      await authService.switchDemoRole('clinician');
                       setShowProfileMenu(false);
                       window.location.reload();
                     }}
@@ -334,7 +335,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
                   <button
                     onClick={async () => {
                       localStorage.setItem('screenwise_role', 'nurse');
-                      await fetch('/api/auth/demo-switch?role=nurse', { method: 'POST' });
+                      await authService.switchDemoRole('nurse');
                       setShowProfileMenu(false);
                       window.location.reload();
                     }}
