@@ -2,9 +2,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 export class ApiError extends Error {
   status: number;
-  data: any;
+  data: unknown;
 
-  constructor(status: number, message: string, data?: any) {
+  constructor(status: number, message: string, data?: unknown) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -14,9 +14,16 @@ export class ApiError extends Error {
 
 export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const headers = {
+  
+  // Retrieve session credentials if available
+  const token = typeof window !== 'undefined' ? localStorage.getItem('screenwise_token') : null;
+  const role = typeof window !== 'undefined' ? localStorage.getItem('screenwise_role') || 'clinician' : 'clinician';
+
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers || {}),
+    'X-Demo-Role': role,
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string> || {}),
   };
 
   const response = await fetch(url, {
@@ -26,13 +33,14 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
 
   if (!response.ok) {
     let errorDetail = response.statusText;
-    let errorData = null;
+    let errorData: unknown = null;
     try {
       errorData = await response.json();
-      if (errorData?.detail) {
-        errorDetail = typeof errorData.detail === 'string' 
-          ? errorData.detail 
-          : JSON.stringify(errorData.detail);
+      if (errorData && typeof errorData === 'object' && 'detail' in errorData) {
+        const detail = (errorData as { detail: unknown }).detail;
+        errorDetail = typeof detail === 'string' 
+          ? detail 
+          : JSON.stringify(detail);
       }
     } catch {
       // Body is not JSON

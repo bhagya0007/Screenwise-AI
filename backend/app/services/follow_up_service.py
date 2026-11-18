@@ -1,9 +1,10 @@
 from datetime import date
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.follow_up import FollowUp
 from app.models.patient import Patient
 from app.schemas.follow_up import FollowUpCreate, FollowUpUpdate, FollowUpResponse
+from app.services.analytics_service import invalidate_analytics_cache
 
 def get_follow_up_tasks(
     db: Session,
@@ -12,7 +13,7 @@ def get_follow_up_tasks(
     priority: Optional[str] = None,
     limit: int = 100
 ) -> List[FollowUpResponse]:
-    query = db.query(FollowUp).join(Patient)
+    query = db.query(FollowUp).options(joinedload(FollowUp.patient)).join(Patient)
 
     if patient_id:
         query = query.filter(FollowUp.patient_id == patient_id)
@@ -71,6 +72,7 @@ def create_follow_up_task(db: Session, task_in: FollowUpCreate) -> FollowUpRespo
         db.add(task)
         db.commit()
         db.refresh(task)
+        invalidate_analytics_cache()
 
         patient = db.query(Patient).filter(Patient.id == task.patient_id).first()
         return FollowUpResponse(
@@ -112,6 +114,7 @@ def update_follow_up_task(db: Session, task_id: int, task_update: FollowUpUpdate
                 setattr(task, k, v)
         db.commit()
         db.refresh(task)
+        invalidate_analytics_cache()
 
         patient = db.query(Patient).filter(Patient.id == task.patient_id).first()
         return FollowUpResponse(
@@ -144,6 +147,7 @@ def delete_follow_up_task(db: Session, task_id: int) -> bool:
     try:
         db.delete(task)
         db.commit()
+        invalidate_analytics_cache()
         return True
     except Exception as e:
         db.rollback()

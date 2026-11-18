@@ -42,15 +42,15 @@ def get_population_analytics_compat(db: Session = Depends(get_db)):
     
     recent_activity = []
     for t in sorted(metrics["tasks"], key=lambda x: x.updated_at or x.created_at, reverse=True)[:8]:
-        patient_name = t.patient.full_name if t.patient else "Patient"
+        # Clinical Privacy Safeguard: De-identify patient name and raw ID in aggregate population metrics
         recent_activity.append({
             "id": f"task-{t.id}",
             "type": "follow_up",
             "action": f"{t.status.title()} Follow-Up",
-            "description": f"{t.title} for {patient_name}",
+            "description": f"{t.title} (Clinical Care Action)",
             "time": (t.updated_at or t.created_at).strftime("%b %d, %H:%M"),
             "status": t.status,
-            "patient_id": t.patient_id
+            "patient_id": None
         })
 
     return {

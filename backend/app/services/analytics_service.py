@@ -15,7 +15,8 @@ Safeguards:
 from datetime import date, timedelta
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
-from sqlalchemy.orm import Session
+import time
+from sqlalchemy.orm import Session, joinedload
 from app.models.patient import Patient
 from app.models.assessment import Assessment
 from app.models.recommendation import Recommendation
@@ -32,9 +33,35 @@ from app.schemas.analytics import (
 
 CELL_SUPPRESSION_THRESHOLD = 5
 
-def compute_population_metrics(db: Session) -> Dict[str, Any]:
+# High-efficiency in-memory TTL caching for population surveillance
+_POPULATION_METRICS_CACHE: Dict[str, Any] = {
+    "timestamp": 0.0,
+    "data": None,
+    "ttl_seconds": 20.0
+}
+
+def invalidate_analytics_cache():
+    """Invalidates the in-memory analytics cache when patient or care records change."""
+    global _POPULATION_METRICS_CACHE
+    _POPULATION_METRICS_CACHE["timestamp"] = 0.0
+    _POPULATION_METRICS_CACHE["data"] = None
+
+def compute_population_metrics(db: Session, force_refresh: bool = False) -> Dict[str, Any]:
+    global _POPULATION_METRICS_CACHE
+    current_time = time.time()
+    if (
+        not force_refresh 
+        and _POPULATION_METRICS_CACHE["data"] is not None 
+        and (current_time - _POPULATION_METRICS_CACHE["timestamp"]) < _POPULATION_METRICS_CACHE["ttl_seconds"]
+    ):
+        return _POPULATION_METRICS_CACHE["data"]
+
     today = date.today()
-    patients = db.query(Patient).all()
+    # Eager load relationships to completely eliminate N+1 queries during evaluation
+    patients = db.query(Patient).options(
+        joinedload(Patient.medical_history),
+        joinedload(Patient.screening_history)
+    ).all()
     tasks = db.query(FollowUp).all()
     recs = db.query(Recommendation).all()
     assessments = db.query(Assessment).all()
@@ -284,7 +311,7 @@ def compute_population_metrics(db: Session) -> Dict[str, Any]:
         {"month": "Nov 2026", "completed": completed_tasks, "scheduled": scheduled_tasks, "pending": pending_tasks, "total": total_tasks}
     ]
 
-    return {
+    result = {
         "total_patients": total_patients,
         "patients_assessed": patients_assessed_count,
         "total_assessments": len(assessments),
@@ -319,6 +346,9 @@ def compute_population_metrics(db: Session) -> Dict[str, Any]:
             "clinical_notice": "Recommendations represent guideline-triggered pathways; completed actions represent verified procedures on record."
         }
     }
+    _POPULATION_METRICS_CACHE["timestamp"] = time.time()
+    _POPULATION_METRICS_CACHE["data"] = result
+    return result
 
 def get_overview_analytics(db: Session) -> AnalyticsOverviewResponse:
     metrics = compute_population_metrics(db)

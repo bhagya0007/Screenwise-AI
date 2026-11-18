@@ -14,6 +14,21 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('recharts')) return 'vendor-charts';
+            if (id.includes('lucide-react')) return 'vendor-icons';
+            if (id.includes('react') || id.includes('react-router')) return 'vendor-react';
+            return 'vendor';
+          }
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

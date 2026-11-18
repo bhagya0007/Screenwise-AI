@@ -18,22 +18,39 @@ def get_current_user(
     Supports JWT Bearer token or safe demo headers for hackathon evaluation.
     """
     # 1. Bearer token evaluation
-    if authorization and authorization.startswith("Bearer "):
+    if authorization:
+        if not authorization.startswith("Bearer "):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authorization header format. Must start with Bearer"
+            )
         token = authorization.split(" ")[1]
         payload = verify_access_token(token)
-        if payload and "sub" in payload:
-            user = db.query(User).filter(User.username == payload["sub"]).first()
-            if user and user.is_active:
-                return user
+        if not payload or "sub" not in payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid, expired, or malformed authentication token"
+            )
+        user = db.query(User).filter(User.username == payload["sub"]).first()
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User account not found or deactivated"
+            )
+        return user
 
-    # 2. Safe demo role fallback for hackathon judges / reviewers
+    # 2. Safe demo role evaluation for hackathon judges / reviewers
     if x_demo_role:
-        role = x_demo_role.lower()
+        role = x_demo_role.strip().lower()
         user = db.query(User).filter(User.role == role).first()
         if user and user.is_active:
             return user
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Unknown demo role '{x_demo_role}'"
+        )
 
-    # 3. Default to primary demo clinician if none supplied (safe demo mode)
+    # 3. Default to primary demo clinician for development / automated test runs
     default_clinician = db.query(User).filter(User.username == "dr.fatima").first()
     if default_clinician:
         return default_clinician

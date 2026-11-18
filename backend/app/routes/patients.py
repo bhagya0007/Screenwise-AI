@@ -2,6 +2,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from app.database.session import get_db
+from app.models.user import User
+from app.routes.auth import get_current_user
 from app.schemas.patient import PatientCreate, PatientUpdate, PatientResponse
 from app.services import patient_service, assessment_service
 
@@ -12,10 +14,12 @@ def list_patients(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     search: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     List all patients with optional search by name, reference ID, or email, with pagination.
+    Requires authenticated clinician/nurse session.
     """
     patients = patient_service.get_patients(db, skip=skip, limit=limit, search=search)
     return [PatientResponse.model_validate(p) for p in patients]
@@ -23,6 +27,7 @@ def list_patients(
 @router.post("", response_model=PatientResponse, status_code=status.HTTP_201_CREATED)
 def create_patient_record(
     patient_in: PatientCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -39,6 +44,7 @@ def create_patient_record(
 @router.get("/{patient_id}", response_model=PatientResponse)
 def get_patient(
     patient_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -53,6 +59,7 @@ def get_patient(
 def update_patient_record(
     patient_id: int,
     patient_update: PatientUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -72,6 +79,7 @@ def update_patient_record(
 @router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_patient_record(
     patient_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """

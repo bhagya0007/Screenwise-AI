@@ -308,6 +308,27 @@ def test_14_privacy_cell_suppression(client: TestClient):
             assert cohort["display_patient_count"] == "< 5"
             assert cohort["is_sample_too_small"] is True
 
+    # Verify recent activity is strictly de-identified (zero raw patient names / IDs)
+    recent = data.get("recent_activity", [])
+    for act in recent:
+        assert act.get("patient_id") is None
+        assert "Care Action" in act.get("description", "") or "Follow-Up" in act.get("action", "")
+
+def test_14b_security_headers_and_token_defense(client: TestClient):
+    """Verify OWASP security headers and defense against forged/invalid JWT tokens."""
+    # Check security headers on API responses
+    res = client.get("/api/health")
+    assert res.status_code == 200
+    assert res.headers.get("X-Content-Type-Options") == "nosniff"
+    assert res.headers.get("X-Frame-Options") == "DENY"
+    assert res.headers.get("X-XSS-Protection") == "1; mode=block"
+    assert "max-age" in res.headers.get("Strict-Transport-Security", "")
+
+    # Check that invalid JWT bearer token is rejected with 401 Unauthorized
+    bad_res = client.get("/api/patients", headers={"Authorization": "Bearer forged_invalid_token_12345"})
+    assert bad_res.status_code == 401
+    assert "Invalid" in bad_res.json().get("detail", "")
+
 # ==============================================================================
 # 4. CLINICAL SAFETY TESTS
 # ==============================================================================

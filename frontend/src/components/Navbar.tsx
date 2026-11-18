@@ -324,7 +324,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
                   <button
                     onClick={async () => {
                       localStorage.setItem('screenwise_role', 'clinician');
-                      await authService.switchDemoRole('clinician');
+                      const res = await authService.switchDemoRole('clinician');
+                      if (res && res.access_token) {
+                        localStorage.setItem('screenwise_token', res.access_token);
+                      }
                       setShowProfileMenu(false);
                       window.location.reload();
                     }}
@@ -335,7 +338,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
                   <button
                     onClick={async () => {
                       localStorage.setItem('screenwise_role', 'nurse');
-                      await authService.switchDemoRole('nurse');
+                      const res = await authService.switchDemoRole('nurse');
+                      if (res && res.access_token) {
+                        localStorage.setItem('screenwise_token', res.access_token);
+                      }
                       setShowProfileMenu(false);
                       window.location.reload();
                     }}

@@ -29,8 +29,11 @@ export const LandingPage: React.FC = () => {
     try {
       // Set session role
       localStorage.setItem('screenwise_role', role);
-      // Trigger demo switch API in background
-      await authService.switchDemoRole(role);
+      // Trigger demo switch API in background and store JWT
+      const res = await authService.switchDemoRole(role);
+      if (res && res.access_token) {
+        localStorage.setItem('screenwise_token', res.access_token);
+      }
     } catch (e) {
       console.warn('Role switch:', e);
     }

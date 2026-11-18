@@ -1,11 +1,12 @@
 import json
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from app.models.patient import Patient
 from app.models.medical_history import MedicalHistory
 from app.models.screening_history import ScreeningHistory
 from app.schemas.patient import PatientCreate, PatientUpdate
+from app.services.analytics_service import invalidate_analytics_cache
 
 def generate_next_patient_reference(db: Session) -> str:
     """Generates the next sequential unique patient reference (e.g. SW-00101)."""
@@ -18,7 +19,10 @@ def get_patients(
     limit: int = 100,
     search: Optional[str] = None
 ) -> List[Patient]:
-    query = db.query(Patient)
+    """
+    High-performance patient listing with eager joinedload to eliminate N+1 queries.
+    """
+    query = db.query(Patient).options(joinedload(Patient.medical_history))
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
@@ -31,7 +35,16 @@ def get_patients(
     return query.order_by(Patient.id.asc()).offset(skip).limit(limit).all()
 
 def get_patient_by_id(db: Session, patient_id: int) -> Optional[Patient]:
-    return db.query(Patient).filter(Patient.id == patient_id).first()
+    """
+    Retrieve single patient with all clinical relations eagerly loaded.
+    """
+    return db.query(Patient).options(
+        joinedload(Patient.medical_history),
+        joinedload(Patient.screening_history),
+        joinedload(Patient.assessments),
+        joinedload(Patient.recommendations),
+        joinedload(Patient.followups)
+    ).filter(Patient.id == patient_id).first()
 
 def get_patient_by_reference(db: Session, patient_reference: str) -> Optional[Patient]:
     return db.query(Patient).filter(Patient.patient_reference == patient_reference).first()
@@ -162,6 +175,7 @@ def create_patient(db: Session, patient_in: PatientCreate) -> Patient:
 
         db.commit()
         db.refresh(patient)
+        invalidate_analytics_cache()
         return patient
     except Exception as e:
         db.rollback()
@@ -229,6 +243,7 @@ def update_patient(db: Session, patient: Patient, patient_update: PatientUpdate)
 
         db.commit()
         db.refresh(patient)
+        invalidate_analytics_cache()
         return patient
     except Exception as e:
         db.rollback()
@@ -241,6 +256,7 @@ def delete_patient(db: Session, patient_id: int) -> bool:
     try:
         db.delete(patient)
         db.commit()
+        invalidate_analytics_cache()
         return True
     except Exception as e:
         db.rollback()

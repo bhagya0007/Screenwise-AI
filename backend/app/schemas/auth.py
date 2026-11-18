@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 class LoginRequest(BaseModel):
     username_or_email: str
@@ -14,8 +14,7 @@ class UserResponse(BaseModel):
     organization: Optional[str] = None
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TokenResponse(BaseModel):
     access_token: str

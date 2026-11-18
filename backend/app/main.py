@@ -1,6 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 from app.core.config import settings
 from app.database.session import engine, Base, SessionLocal
 from app.services.seed_data import seed_database_if_empty
@@ -15,6 +19,18 @@ from app.routes import (
     screenings_router,
     auth_router
 )
+
+# Enterprise HTTP Security Headers Middleware (OWASP Secure Configuration)
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        return response
 
 # Ensure all database tables exist immediately upon import
 Base.metadata.create_all(bind=engine)
@@ -39,6 +55,10 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Attach Security Headers and Response Compression Middlewares
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Secure CORS Middleware configuration restricted to authorized origins and cloud deploy preview domains
 app.add_middleware(
