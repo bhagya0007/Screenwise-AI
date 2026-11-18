@@ -1,10 +1,16 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+import logging
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
+
+logger = logging.getLogger("screenwise")
 from app.core.config import settings
 from app.database.session import engine, Base, SessionLocal
 from app.services.seed_data import seed_database_if_empty
@@ -55,6 +61,19 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Global exception handler preventing internal traceback leaks (OWASP Security Hardening)."""
+    if isinstance(exc, (StarletteHTTPException, HTTPException)):
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    if isinstance(exc, RequestValidationError):
+        return JSONResponse(status_code=422, content={"detail": exc.errors()})
+    logger.error(f"Internal error on {request.method} {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal server error occurred. Protected against information leakage."}
+    )
 
 # Attach Security Headers and Response Compression Middlewares
 app.add_middleware(SecurityHeadersMiddleware)

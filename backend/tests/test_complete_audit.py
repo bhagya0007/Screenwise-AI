@@ -396,3 +396,42 @@ def test_18_mandatory_professional_review(client: TestClient):
     for r in recs:
         assert r["requires_professional_review"] is True
         assert r["suggested_timing"] is not None
+
+def test_19_error_handling_and_input_validation(client: TestClient):
+    """Verify 404 for non-existent patient and 422 for malformed payloads."""
+    # 404 for invalid patient ID
+    res_404 = client.get("/api/patients/999999")
+    assert res_404.status_code == 404
+    assert "not found" in res_404.json()["detail"].lower()
+
+    # 422 for missing required fields (e.g. missing date_of_birth and sex)
+    res_422 = client.post("/api/patients", json={"full_name": "Incomplete Record"})
+    assert res_422.status_code == 422
+
+def test_20_followup_lifecycle_completion(client: TestClient):
+    """Verify follow-up task creation, status transition to completed, and date recording."""
+    pid = getattr(test_01_patient_creation, "patient_id", 1)
+    
+    # Create task
+    task_res = client.post("/api/followups", json={
+        "patient_id": pid,
+        "title": "Confirmatory Fasting Plasma Glucose Order",
+        "action_type": "lab_test",
+        "priority": "urgent",
+        "due_date": "2026-12-01",
+        "notes": "Urgent repeat glucose test per IFHAS protocol"
+    })
+    assert task_res.status_code == 201
+    task_data = task_res.json()
+    task_id = task_data["id"]
+    assert task_data["status"] == "pending"
+
+    # Complete task
+    update_res = client.put(f"/api/followups/{task_id}", json={
+        "status": "completed",
+        "clinical_notes": "Sample drawn and sent to Abu Dhabi Central Laboratory"
+    })
+    assert update_res.status_code == 200
+    updated = update_res.json()
+    assert updated["status"] == "completed"
+    assert updated["completion_date"] is not None

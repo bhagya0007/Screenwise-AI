@@ -159,6 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
             <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
             <input
               type="text"
+              aria-label="Search patients by name, reference ID, or date of birth"
               placeholder="Search patients, ID, DOB..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -170,6 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
+                aria-label="Clear search input"
                 className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600"
               >
                 <X className="w-3.5 h-3.5" />
@@ -231,6 +233,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
         <div ref={notificationsRef} className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
+            aria-label="Clinical alerts and overdue needs"
+            aria-expanded={showNotifications}
             className="p-2 rounded-lg text-slate-500 hover:text-[#173A56] hover:bg-slate-100 transition-colors relative cursor-pointer"
             title="Clinical Alerts"
           >
@@ -289,6 +293,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewPatientModal }) => {
         <div ref={profileRef} className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
+            aria-label="User profile and role switcher"
+            aria-expanded={showProfileMenu}
             className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-lg border border-slate-200 hover:border-slate-300 bg-white cursor-pointer transition-colors"
           >
             <div className="w-6 h-6 rounded-md bg-[#173A56] text-white flex items-center justify-center font-bold text-[10px]">

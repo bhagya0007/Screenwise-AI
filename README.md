@@ -171,16 +171,18 @@ npm run dev
 - **Frontend App**: `http://localhost:5173`
 - **Landing Page**: `http://localhost:5173/landing`
 
-### 4. Running the Complete Automated Test Suite (43/43 Tests)
+### 4. Running the Complete Automated Test Suite (45/45 Tests)
 ```bash
 cd backend
 venv\Scripts\python.exe -m pytest -v
 ```
-All **43 automated tests pass with 100% success rate**, verifying:
-- Patient creation, editing, listing, deletion
+All **45 automated tests pass with 100% success rate**, verifying:
+- Patient creation, editing, listing, deletion, and 404/422 validation
 - Diabetes, Cardiovascular, and Cancer guideline rules
-- Small-cell privacy suppression and PHI de-identification
-- OWASP security headers and invalid token rejection
+- Small-cell privacy suppression ($n < 5$) and PHI de-identification
+- OWASP security headers (`nosniff`, `DENY`, `max-age=31536000`)
+- JWT authentication and forged token defense (HTTP 401)
+- Follow-up care task creation, transition, and completion lifecycle
 - Clinical safety and risk score deferrals
 
 ---
