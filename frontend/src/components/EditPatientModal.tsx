@@ -3,7 +3,7 @@ import { Dialog } from './ui/Dialog';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
-import { Patient, PatientCreateInput } from '../types';
+import { Patient, PatientCreateInput, Sex } from '../types';
 import { patientService } from '../services/patientService';
 
 interface EditPatientModalProps {
@@ -91,7 +91,7 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
     }
   }, [patient]);
 
-  const handleChange = (field: keyof PatientCreateInput, value: any) => {
+  const handleChange = <K extends keyof PatientCreateInput>(field: K, value: PatientCreateInput[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -107,8 +107,8 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
       await patientService.update(patient.id, formData);
       onPatientUpdated();
       onClose();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to update patient record.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update patient record.');
     } finally {
       setLoading(false);
     }
@@ -200,7 +200,7 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
             <Select
               label="Biological Sex *"
               value={formData.sex}
-              onChange={(e) => handleChange('sex', e.target.value)}
+              onChange={(e) => handleChange('sex', e.target.value as Sex)}
               options={[
                 { label: 'Female', value: 'female' },
                 { label: 'Male', value: 'male' },

@@ -67,9 +67,9 @@ export const PopulationAnalyticsPage: React.FC = () => {
       setError(null);
       const res = await analyticsService.getPopulationData();
       setData(res);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to load population analytics:', err);
-      setError(err?.message || 'Failed to connect to analytics service.');
+      setError(err instanceof Error ? err.message : 'Failed to connect to analytics service.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -345,7 +345,7 @@ export const PopulationAnalyticsPage: React.FC = () => {
                   <YAxis type="category" dataKey="name" width={110} tick={{ fill: CHART_COLORS.navy, fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '11px' }}
-                    formatter={(val: any) => [`${val} Patients`, 'Count']}
+                    formatter={(val) => [`${val ?? 0} Patients`, 'Count']}
                   />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                     {diabetesData.map((entry, index) => (
@@ -385,7 +385,7 @@ export const PopulationAnalyticsPage: React.FC = () => {
                   <YAxis type="category" dataKey="name" width={95} tick={{ fill: CHART_COLORS.navy, fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '11px' }}
-                    formatter={(val: any) => [`${val} Patients`, 'Count']}
+                    formatter={(val) => [`${val ?? 0} Patients`, 'Count']}
                   />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                     {cardioData.map((entry, index) => (
@@ -558,11 +558,11 @@ export const PopulationAnalyticsPage: React.FC = () => {
                   <YAxis unit="%" domain={[0, 100]} tick={{ fill: CHART_COLORS.slate, fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '11px' }}
-                    formatter={(val: any, name: any, item: any) => {
-                      if (item.payload.isSuppressed) {
+                    formatter={(val, name, item) => {
+                      if ((item as { payload?: { isSuppressed?: boolean } })?.payload?.isSuppressed) {
                         return ['Suppressed (n < 5)', 'Adherence Rate %'];
                       }
-                      return [`${val}%`, name];
+                      return [`${val ?? 0}%`, String(name ?? '')];
                     }}
                   />
                   <Bar dataKey="Adherence Rate %" fill={CHART_COLORS.teal} radius={[4, 4, 0, 0]} />

@@ -77,8 +77,8 @@ export const NewFollowUpModal: React.FC<NewFollowUpModalProps> = ({
       await followUpService.create(formData);
       onTaskCreated();
       onClose();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to schedule follow-up.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to schedule follow-up.');
     } finally {
       setLoading(false);
     }

@@ -111,14 +111,14 @@ export interface ScreeningAssessment {
   status: ScreeningStatus;
   flag_status?: string;
   reason_for_flag?: string;
-  relevant_patient_factors?: Record<string, any>;
+  relevant_patient_factors?: Record<string, unknown>;
   missing_information?: string[];
   applicable_guideline_reference?: string;
   guideline_version?: string;
   suggested_next_step?: string;
   professional_review_requirement?: string;
   uncertainty_note?: string;
-  programme_eligibility?: Record<string, any>;
+  programme_eligibility?: Record<string, unknown>;
   risk_level: RiskLevel;
   review_status: ReviewStatus;
   last_screened_date?: string;

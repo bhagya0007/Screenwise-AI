@@ -3,7 +3,7 @@ import { Dialog } from './ui/Dialog';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
-import { PatientCreateInput } from '../types';
+import { PatientCreateInput, Sex } from '../types';
 import { patientService } from '../services/patientService';
 
 interface NewPatientModalProps {
@@ -47,7 +47,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({
     colorectal_screen_type: 'colonoscopy',
   });
 
-  const handleChange = (field: keyof PatientCreateInput, value: any) => {
+  const handleChange = <K extends keyof PatientCreateInput>(field: K, value: PatientCreateInput[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -63,8 +63,8 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({
       await patientService.create(formData);
       onPatientCreated();
       onClose();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to register patient.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to register patient.');
     } finally {
       setLoading(false);
     }
@@ -162,7 +162,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({
               <Select
                 label="Sex Assigned at Birth *"
                 value={formData.sex}
-                onChange={(e) => handleChange('sex', e.target.value)}
+                onChange={(e) => handleChange('sex', e.target.value as Sex)}
                 options={[
                   { label: 'Female', value: 'female' },
                   { label: 'Male', value: 'male' },
