@@ -215,35 +215,5 @@ For evaluation and demonstration, ScreenWise AI includes built-in role switching
 
 ---
 
-## ⏱️ Suggested 3-Minute Hackathon Demonstration Script
-
-### Minute 1: The Problem & The Abu Dhabi Solution (Landing & Overview)
-1. **Open Landing Page** (`http://localhost:5173/landing`):
-   - Highlight the mission: closing adult preventive screening care gaps using official **ADPHC & DoH (IFHAS & Weqaya)** standards.
-   - Click **"Dr. Fatima Al Suwaidi (Lead Clinician)"** to launch the session.
-2. **Overview Dashboard** (`/`):
-   - Point out real-time cohort KPIs: Total Patients, Screening Coverage Rate, and Pathway Gaps.
-   - Note the **Deep Navy & Teal** healthcare SaaS aesthetic, designed for fast clinical workflows.
-
-### Minute 2: Real Clinical Patient Journey (Patient Profile & Assessment Engine)
-1. **Patient Directory** (`/patients`):
-   - Search for **"Tariq Al Hashimi"** (48y male) or click **"Amina Al Mansoori"** (48y female).
-2. **Patient Detail Page** (`/patients/:id`):
-   - Show clinical vitals, family histories, and past screening timeline.
-   - Click **"Edit Profile & Vitals"**: update a blood pressure or glucose value, click **"Save & Recalculate"**.
-   - Show that the transparent assessment engine automatically re-evaluated guidelines.
-   - Point out the **ADPHC Colorectal rule** (starts at age 40 in Abu Dhabi, unlike US 45) and **Cardiovascular safety rule** (formal risk score deferred due to missing lipid values).
-
-### Minute 3: Closed-Loop Follow-Ups & Privacy-Preserving Analytics
-1. **Recommendations & Follow-Up Creation** (`/recommendations`):
-   - Filter by **"High Priority"**; select the screening colonoscopy recommendation.
-   - Click **"Acknowledge & Schedule Follow-Up"**; set status to `scheduled` or `completed`.
-2. **Population Analytics** (`/analytics`):
-   - Show the interactive **Recharts visualizations**: Diabetes distribution, Cardiovascular review status, Cancer screening comparisons, and longitudinal completion trend.
-   - Highlight the **Privacy Safeguard banner**: point out that small cohorts ($n < 5$) display `< 5` with adherence rates masked to protect patient confidentiality.
-   - Emphasize that **all metrics updated dynamically from the backend** with zero hardcoded numbers.
-
----
-
 ## 📄 License
 Developed for the 2026 Healthcare Innovation Challenge. Dedicated to advancing preventive health surveillance in Abu Dhabi and the UAE.
